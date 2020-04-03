@@ -4,3 +4,4 @@ checkpoints/
 .vscode/
 runs/
 sample/mnist_train
+*/__pycache__
