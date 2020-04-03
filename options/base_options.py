@@ -18,7 +18,7 @@ class BaseOptions():
 
 	def initialize(self):
 		self.parser.add_argument('--data_dir', type=str, help='path to the folder that contains train.h5, val.h5 and test.h5')
-		self.parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
+		# self.parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
 		self.parser.add_argument('--name', type=str, default='spatialAudioVisual', help='name of the experiment. It decides where to store models')
 		self.parser.add_argument('--checkpoints_dir', type=str, default='checkpoints/', help='models are saved here')
 		self.parser.add_argument('--model', type=str, default='audioVisual', help='chooses how datasets are loaded.')
