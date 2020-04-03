@@ -113,7 +113,7 @@ def main():
             output = model.forward(data)
 
             # Compute loss
-            loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:])
+            loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:].cuda())
             batch_loss.append(loss.item())  
 
             if(opt.measure_time):
