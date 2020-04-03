@@ -19,7 +19,7 @@ class TrainOptions(BaseOptions):
 		self.parser.add_argument('--decay_factor', type=float, default=0.94, help='learning rate decay factor')
 		self.parser.add_argument('--tensorboard', type=bool, default=False, help='use tensorboard to visualize loss change ')		
 		self.parser.add_argument('--measure_time', type=bool, default=False, help='measure time of different steps during training')
-		self.parser.add_argument('--validation_on', action='store_true', help='whether to test on validation set during training')
+		self.parser.add_argument('--validation_on', type=bool, action='store_true', help='whether to test on validation set during training')
 		self.parser.add_argument('--validation_freq', type=int, default=100, help='frequency of testing on validation set')
 		self.parser.add_argument('--validation_batches', type=int, default=10, help='number of batches to test for validation')
 		self.parser.add_argument('--enable_data_augmentation', type=bool, default=True, help='whether to augment input frame')
