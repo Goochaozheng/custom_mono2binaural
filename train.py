@@ -187,6 +187,7 @@ def main():
 
 
     if opt.tensorboard:
+        print(metric_dict)
         writer.add_hparams(vars(opt), metric_dict)
 
 if __name__ == '__main__':
