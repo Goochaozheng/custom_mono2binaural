@@ -23,7 +23,7 @@ def display_val(model, loss_criterion, writer, index, dataset_val, opt):
         for i, val_data in enumerate(dataset_val):
             if i < opt.validation_batches:
                 output = model.forward(val_data)
-                loss = loss_criterion(output['binaural_spectrogram'], output['audio_gt'])
+                loss = loss_criterion(output, val_data['audio_gt'][:,:,:-1,:].cuda())
                 losses.append(loss.item()) 
             else:
                 break
