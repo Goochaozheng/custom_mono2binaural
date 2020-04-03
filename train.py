@@ -113,7 +113,7 @@ def main():
             output = model.forward(data)
 
             # Compute loss
-            loss = loss_criterion(output['binaural_spectrogram'], output['audio_gt'])
+            loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:])
             batch_loss.append(loss.item())  
 
             if(opt.measure_time):
