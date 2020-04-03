@@ -1,0 +1,6 @@
+data/
+log/
+checkpoints/
+.vscode/
+runs/
+sample/mnist_train

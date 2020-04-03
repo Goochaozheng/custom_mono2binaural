@@ -1,0 +1,37 @@
+import torch
+import h5py
+import librosa
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+
+class CustomDataset(torch.utils.data.Dataset):
+
+    def __init__(self, opt):
+        super(CustomDataset, self).__init__()
+        self.opt = opt
+        if opt.mode == 'val':
+            path = os.path.join(opt.data_dir, 'val.h5')
+        elif opt.mode == 'train':
+            path = os.path.join(opt.data_dir, 'train.h5')
+        elif opt.mode == 'test':
+            path = os.path.join(opt.data_dir, 'test.h5')            
+        self.data_source = h5py.File(path)
+
+    def __len__(self):
+        return len(self.data_source['visual_feature'])
+
+    def __getitem__(self, idx):
+
+        visual_feature = torch.FloatTensor(self.data_source['visual_feature'][idx])
+        audio_mix = torch.FloatTensor(self.data_source['audio_mix'][idx])
+        aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx])
+
+        data = {
+            'visual_feature': visual_feature,
+            'audio_mix': audio_mix,
+            'audio_diff': aduio_diff
+        }
+        return data
+
+    
