@@ -38,16 +38,16 @@ class BaseOptions():
 		self.opt.isTrain = self.isTrain
 		self.opt.enable_data_augmentation = self.enable_data_augmentation
 
-		str_ids = self.opt.gpu_ids.split(',')
-		self.opt.gpu_ids = []
-		for str_id in str_ids:
-			id = int(str_id)
-			if id >= 0:
-				self.opt.gpu_ids.append(id)
+		# str_ids = self.opt.gpu_ids.split(',')
+		# self.opt.gpu_ids = []
+		# for str_id in str_ids:
+		# 	id = int(str_id)
+		# 	if id >= 0:
+		# 		self.opt.gpu_ids.append(id)
 
 		# set gpu ids
-		if len(self.opt.gpu_ids) > 0:
-			torch.cuda.set_device(self.opt.gpu_ids[0])
+		# if len(self.opt.gpu_ids) > 0:
+		# 	torch.cuda.set_device(self.opt.gpu_ids[0])
 
 
 		#I should process the opt here, like gpu ids, etc.
