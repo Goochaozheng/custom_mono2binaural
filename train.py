@@ -73,7 +73,7 @@ def main():
     model.to(device)
 
     if opt.tensorboard:
-        writer.add_graph(model, next(enumerate(dataloader)))
+        writer.add_graph(model, next(iter(dataloader)))
 
     # Create optimizer
     optimizer = create_optimizer(model, opt)
