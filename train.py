@@ -67,7 +67,6 @@ def main():
     # Tensorboard
     if opt.tensorboard:
         writer = SummaryWriter(comment=opt.name)
-        writer.add_hparams(vars(opt))
     
     # Build network
     model = AudioVisualModel(opt)
@@ -90,6 +89,10 @@ def main():
     model_backward_time = []
     batch_loss = []
     best_err = float("inf")
+    metric_dict = {
+        'best_err': 0,
+        'final_loss': 0
+    }
 
     for epoch in range(1, opt.niter+1):
         torch.cuda.synchronize()
@@ -132,6 +135,7 @@ def main():
             if(total_steps // opt.batchSize % opt.display_freq == 0):
                 print('Display training progress at (epoch %d, total_steps %d)' % (epoch, total_steps))
                 avg_loss = sum(batch_loss) / len(batch_loss)
+                metric_dict['final_loss'] = avg_loss
                 print('Average loss: %.3f' % (avg_loss))
                 batch_loss = []
                 if opt.tensorboard:
@@ -162,6 +166,7 @@ def main():
                 #save the model that achieves the smallest validation error
                 if val_err < best_err:
                     best_err = val_err
+                    metric_dict['best_err'] = best_err
                     print('saving the best model (epoch %d, total_steps %d) with validation error %.3f\n' % (epoch, total_steps, val_err))
                     torch.save(model.state_dict(), os.path.join('.', opt.checkpoints_dir, opt.name, 'model_best.pth'))
 
@@ -179,6 +184,10 @@ def main():
             for param_group in optimizer.param_groups:
                 param_group['lr'] *= opt.decay_factor
             print('decreased learning rate by ', opt.decay_factor)        
+
+
+    if opt.tensorboard:
+        writer.add_hparams(vars(opt), metric_dict)
 
 if __name__ == '__main__':
     main()
