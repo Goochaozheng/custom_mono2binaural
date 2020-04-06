@@ -139,6 +139,9 @@ def main():
 	visual_feature = visual_extraction(frame)
 	data['visual_feature'] = visual_feature
 
+	print(data)
+	exit()
+
 	output = model.forward(data)
 	predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 	#ISTFT to convert back to audio
