@@ -17,6 +17,8 @@ from options.test_options import TestOptions
 import torchvision
 import torchvision.transforms as transforms
 import torch
+from models.audioVisual_model import AudioVisualModel
+from dataloader.custom_dataset import CustomDataset
 
 def generate_spectrogram(audio):
     spectro = librosa.core.stft(audio, n_fft=512, hop_length=160, win_length=400, center=True)
@@ -36,10 +38,12 @@ def main():
 	#load test arguments
 	opt = TestOptions().parse()
 	opt.device = torch.device("cuda:0")
+	opt.mode = 'test'
 
 	# load model
-	model = torch.load(opt.model_path)
-	opt.mode = 'test'
+	weights = torch.load(opt.input_audio_path)
+	model = AudioVisualModel(opt)
+	model.load_state_dict(weights)
 	model.to(opt.device)
 	model.eval()
 
