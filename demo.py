@@ -156,8 +156,8 @@ def main():
 	predicted_binaural_audio = np.divide(binaural_audio, overlap_count)
 
 	#check output directory
-	if not os.path.isdir(opt.output_dir_root):
-		os.mkdir(opt.output_dir_root)
+	if not os.path.isdir(os.path.join(opt.output_dir_root, opt.comment)):
+		os.mkdir(os.path.join(opt.output_dir_root, opt.comment))
 
 	mixed_mono = (audio_channel1 + audio_channel2) / 2
 	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'predicted_binaural.wav'), predicted_binaural_audio, opt.audio_sampling_rate)
