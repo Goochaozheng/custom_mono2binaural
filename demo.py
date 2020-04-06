@@ -89,7 +89,7 @@ def main():
 
 		#Read frame
 		video.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
-		flag, image = video.read()
+		flag, frame = video.read()
 		if not flag:
 			exit("Read frame fail")
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -126,14 +126,15 @@ def main():
 	#get the frame index for last window
 	
 	frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * fps)
+
 	video.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
-	flag, image = video.read()
+	flag, frame = video.read()
 	if not flag:
 		exit("Read frame fail")
 	frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 	frame = Image.fromarray(frame)
 	frame = vision_transform(image).unsqueeze(0) #unsqueeze to add a batch dimension
-	
+
 	frame = frame.to(device)
 	visual_feature = visual_extraction(frame)
 	data['visual_feature'] = visual_feature
