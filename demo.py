@@ -45,8 +45,8 @@ def main():
 
 	# load resnet 
 	resnet = torchvision.models.resnet18(pretrained=True)
-    layers = list(resnet.children())[0:-2]
-    visual_extraction = torch.nn.Sequential(*layers) 
+	layers = list(resnet.children())[0:-2]
+	visual_extraction = torch.nn.Sequential(*layers) 
 	visual_extraction.to(device)
 
 	#load the audio to perform separation
