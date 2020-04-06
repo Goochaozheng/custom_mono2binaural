@@ -94,7 +94,7 @@ def main():
 			exit("Read frame fail")
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		frame = Image.fromarray(frame)
-		frame = vision_transform(image).unsqueeze(0) #unsqueeze to add a batch dimension
+		frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
 
 		frame = frame.to(device)
 		visual_feature = visual_extraction(frame)
@@ -133,7 +133,7 @@ def main():
 		exit("Read frame fail")
 	frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 	frame = Image.fromarray(frame)
-	frame = vision_transform(image).unsqueeze(0) #unsqueeze to add a batch dimension
+	frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
 
 	frame = frame.to(device)
 	visual_feature = visual_extraction(frame)
