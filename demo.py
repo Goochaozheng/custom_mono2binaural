@@ -154,6 +154,7 @@ def main():
 
 	#divide aggregated predicted audio by their corresponding counts
 	predicted_binaural_audio = np.divide(binaural_audio, overlap_count)
+	print(predicted_binaural_audio.shape)
 
 	#check output directory
 	if not os.path.isdir(os.path.join(opt.output_dir_root, opt.comment)):
