@@ -41,7 +41,7 @@ def main():
 	opt.mode = 'test'
 
 	# load model
-	weights = torch.load(opt.input_audio_path)
+	weights = torch.load(opt.weights_audio)
 	model = AudioVisualModel(opt)
 	model.load_state_dict(weights)
 	model.to(opt.device)
