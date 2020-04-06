@@ -99,6 +99,7 @@ def main():
 		video.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
 		flag, frame = video.read()
 		if not flag:
+			print(video.get(cv2.CAP_PROP_POS_FRAMES))
 			exit("Read frame fail")
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		frame = Image.fromarray(frame)
@@ -144,7 +145,9 @@ def main():
 	video.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
 	flag, frame = video.read()
 	if not flag:
+		print(video.get(cv2.CAP_PROP_POS_FRAMES))
 		exit("Read frame fail")
+
 	frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 	frame = Image.fromarray(frame)
 	frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
