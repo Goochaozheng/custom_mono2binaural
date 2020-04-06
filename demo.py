@@ -108,6 +108,11 @@ def main():
 		output = model.forward(data)
 		predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
+		# display test err
+		loss_criterion = torch.nn.MSELoss()
+		loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:].cuda())
+		print("Loss: %f" % loss)
+
 		#ISTFT to convert back to audio
 		reconstructed_stft_diff = predicted_spectrogram[0,:,:] + (1j * predicted_spectrogram[1,:,:])
 		reconstructed_signal_diff = librosa.istft(reconstructed_stft_diff, hop_length=160, win_length=400, center=True, length=samples_per_window)
@@ -159,7 +164,6 @@ def main():
 
 	#divide aggregated predicted audio by their corresponding counts
 	predicted_binaural_audio = np.divide(binaural_audio, overlap_count)
-	print(predicted_binaural_audio.shape)
 
 	#check output directory
 	if not os.path.isdir(os.path.join(opt.output_dir_root, opt.comment)):
