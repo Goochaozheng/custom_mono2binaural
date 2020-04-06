@@ -37,21 +37,21 @@ def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
 def main():
 	#load test arguments
 	opt = TestOptions().parse()
-	opt.device = torch.device("cuda:0")
+	device = torch.device("cuda:0")
 	opt.mode = 'test'
 
 	# load model
 	weights = torch.load(opt.weights_audio)
 	model = AudioVisualModel(opt)
 	model.load_state_dict(weights)
-	model.to(opt.device)
+	model.to(device)
 	model.eval()
 
 	# load resnet 
 	resnet = torchvision.models.resnet18(pretrained=True)
 	layers = list(resnet.children())[0:-2]
 	visual_extraction = torch.nn.Sequential(*layers) 
-	visual_extraction.to(opt.device)
+	visual_extraction.to(device)
 
 	#load the audio to perform separation
 	audio, audio_rate = librosa.load(opt.input_audio_path, sr=opt.audio_sampling_rate, mono=False)
