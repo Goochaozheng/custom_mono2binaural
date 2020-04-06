@@ -51,7 +51,7 @@ def main():
 	resnet = torchvision.models.resnet18(pretrained=True)
 	layers = list(resnet.children())[0:-2]
 	visual_extraction = torch.nn.Sequential(*layers) 
-	visual_extraction.to(device)
+	visual_extraction.to(opt.device)
 
 	#load the audio to perform separation
 	audio, audio_rate = librosa.load(opt.input_audio_path, sr=opt.audio_sampling_rate, mono=False)
