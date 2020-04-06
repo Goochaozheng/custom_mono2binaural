@@ -152,7 +152,7 @@ def main():
             # Save latest
             if(total_steps // opt.batch_size % opt.save_latest_freq == 0):
                 print('saving the latest model (epoch %d, total_steps %d)' % (epoch, total_steps))
-                torch.save(model.state_dict(), os.path.join('.', opt.checkpoints_dir, opt.name, 'model_latest.pth'))
+                torch.save(model, os.path.join('.', opt.checkpoints_dir, opt.name, 'model_latest.pth'))
 
             # Validation
             if(total_steps // opt.batch_size % opt.validation_freq == 0 and opt.validation_on):
@@ -168,7 +168,7 @@ def main():
                     best_err = val_err
                     metric_dict['best_err'] = best_err
                     print('saving the best model (epoch %d, total_steps %d) with validation error %.3f\n' % (epoch, total_steps, val_err))
-                    torch.save(model.state_dict(), os.path.join('.', opt.checkpoints_dir, opt.name, 'model_best.pth'))
+                    torch.save(model, os.path.join('.', opt.checkpoints_dir, opt.name, 'model_best.pth'))
 
             if(opt.measure_time):
                  iter_start_time = time.time()
@@ -176,7 +176,7 @@ def main():
         # Save at certain epoch
         if(epoch % opt.save_epoch_freq == 0):
             print('saving the model at the end of epoch %d, total_steps %d' % (epoch, total_steps))
-            torch.save(model.state_dict(), os.path.join('.', opt.checkpoints_dir, opt.name, str(epoch) + '_model.pth'))            
+            torch.save(model, os.path.join('.', opt.checkpoints_dir, opt.name, str(epoch) + '_model.pth'))            
 
 
         #decrease learning rate 6% every opt.learning_rate_decrease_itr epochs

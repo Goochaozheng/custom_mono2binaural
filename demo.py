@@ -40,12 +40,17 @@ def main():
 	device = torch.device("cuda:0")
 	opt.mode = 'test'
 
-	# load model
+	# load model weights
 	weights = torch.load(opt.weights_audio)
 	model = AudioVisualModel(opt)
 	model.load_state_dict(weights)
 	model.to(device)
 	model.eval()
+
+	# load model
+	# model = torch.load(opt.model_path)
+	# model.to(device)
+	# model.eval()
 
 	# load resnet 
 	resnet = torchvision.models.resnet18(pretrained=True)
@@ -161,9 +166,9 @@ def main():
 		os.mkdir(os.path.join(opt.output_dir_root, opt.comment))
 
 	mixed_mono = (audio_channel1 + audio_channel2) / 2
-	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'predicted_binaural.wav'), predicted_binaural_audio, opt.audio_sampling_rate)
-	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'mixed_mono.wav'), mixed_mono, opt.audio_sampling_rate)
-	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'input_binaural.wav'), audio, opt.audio_sampling_rate)
+	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'predicted_binaural.wav'), predicted_binaural_audio, sr=opt.audio_sampling_rate)
+	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'mixed_mono.wav'), mixed_mono, sr=opt.audio_sampling_rate)
+	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'input_binaural.wav'), audio, sr=opt.audio_sampling_rate)
 
 if __name__ == '__main__':
     main()
