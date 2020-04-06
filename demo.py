@@ -80,6 +80,9 @@ def main():
 	sliding_window_start = 0
 	data = {}
 	samples_per_window = int(opt.audio_length * opt.audio_sampling_rate)
+	total_loss = 0
+	count = 0
+
 	while sliding_window_start + samples_per_window < audio.shape[-1]:
 		sliding_window_end = sliding_window_start + samples_per_window
 		normalizer, audio_segment = audio_normalize(audio[:,sliding_window_start:sliding_window_end])
@@ -111,7 +114,8 @@ def main():
 		# display test err
 		loss_criterion = torch.nn.MSELoss()
 		loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:].cuda())
-		print("Loss: %f" % loss)
+		total_loss = total_loss + loss
+		count = count + 1
 
 		#ISTFT to convert back to audio
 		reconstructed_stft_diff = predicted_spectrogram[0,:,:] + (1j * predicted_spectrogram[1,:,:])
@@ -168,6 +172,8 @@ def main():
 	#check output directory
 	if not os.path.isdir(os.path.join(opt.output_dir_root, opt.comment)):
 		os.mkdir(os.path.join(opt.output_dir_root, opt.comment))
+
+	print('Loss:%f' % (total_loss/count))
 
 	mixed_mono = (audio_channel1 + audio_channel2) / 2
 	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'predicted_binaural.wav'), predicted_binaural_audio, sr=opt.audio_sampling_rate)
