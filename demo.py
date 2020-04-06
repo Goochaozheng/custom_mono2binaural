@@ -92,6 +92,8 @@ def main():
 		flag, image = video.read()
 		if not flag:
 			exit("Read frame fail")
+		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+		frame = Image.fromarray(frame)
 		frame = vision_transform(image).unsqueeze(0) #unsqueeze to add a batch dimension
 
 		frame = frame.to(device)
@@ -128,9 +130,9 @@ def main():
 	flag, image = video.read()
 	if not flag:
 		exit("Read frame fail")
-	#image = image.transpose(Image.FLIP_LEFT_RIGHT)
+	frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+	frame = Image.fromarray(frame)
 	frame = vision_transform(image).unsqueeze(0) #unsqueeze to add a batch dimension
-	data['frame'] = frame
 	
 	frame = frame.to(device)
 	visual_feature = visual_extraction(frame)
