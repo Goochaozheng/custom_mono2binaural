@@ -82,8 +82,8 @@ def main():
 		audio_segment_channel2 = audio_segment[1,:]
 		audio_segment_mix = audio_segment_channel1 + audio_segment_channel2
 
-		data['audio_diff_spec'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 - audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
-		data['audio_mix_spec'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
+		data['audio_diff'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 - audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
+		data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
 		#get the frame index for current window
 		frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * fps)
 
@@ -138,9 +138,6 @@ def main():
 	frame = frame.to(device)
 	visual_feature = visual_extraction(frame)
 	data['visual_feature'] = visual_feature
-
-	print(data)
-	exit()
 
 	output = model.forward(data)
 	predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
