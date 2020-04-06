@@ -44,7 +44,7 @@ def main():
     dataset = CustomDataset(opt)
     dataloader = DataLoader(
         dataset, 
-        batch_size=opt.batchSize, 
+        batch_size=opt.batch_size, 
         shuffle=True, 
         num_workers=int(opt.nThreads)
     )
@@ -56,7 +56,7 @@ def main():
         dataset_val = CustomDataset(opt)
         dataloader_val = DataLoader(
             dataset_val,
-            batch_size=opt.batchSize, 
+            batch_size=opt.batch_size, 
             shuffle=True, 
             num_workers=int(opt.nThreads)
         )
@@ -106,7 +106,7 @@ def main():
                 torch.cuda.synchronize()
                 iter_data_loaded_time = time.time()
             
-            total_steps += opt.batchSize
+            total_steps += opt.batch_size
 
             # Forward
             model.zero_grad()
@@ -132,7 +132,7 @@ def main():
                 model_backward_time.append(iter_model_backwarded_time - iter_data_forwarded_time)                             
 
             # Display
-            if(total_steps // opt.batchSize % opt.display_freq == 0):
+            if(total_steps // opt.batch_size % opt.display_freq == 0):
                 print('Display training progress at (epoch %d, total_steps %d)' % (epoch, total_steps))
                 avg_loss = sum(batch_loss) / len(batch_loss)
                 metric_dict['final_loss'] = avg_loss
@@ -150,12 +150,12 @@ def main():
                 print('end of display \n')                
 
             # Save latest
-            if(total_steps // opt.batchSize % opt.save_latest_freq == 0):
+            if(total_steps // opt.batch_size % opt.save_latest_freq == 0):
                 print('saving the latest model (epoch %d, total_steps %d)' % (epoch, total_steps))
                 torch.save(model.state_dict(), os.path.join('.', opt.checkpoints_dir, opt.name, 'model_latest.pth'))
 
             # Validation
-            if(total_steps // opt.batchSize % opt.validation_freq == 0 and opt.validation_on):
+            if(total_steps // opt.batch_size % opt.validation_freq == 0 and opt.validation_on):
                 model.eval()
                 opt.mode = 'val'
                 print('Display validation results at (epoch %d, total_steps %d)' % (epoch, total_steps))

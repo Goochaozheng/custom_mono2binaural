@@ -5,3 +5,4 @@ checkpoints/
 runs/
 sample/mnist_train
 **/__pycache__
+demo/
