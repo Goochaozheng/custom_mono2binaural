@@ -129,7 +129,7 @@ def main():
                 iter_model_backwarded_time = time.time()
                 data_loading_time.append(iter_data_loaded_time - iter_start_time)
                 model_forward_time.append(iter_data_forwarded_time - iter_data_loaded_time)
-                model_backward_time.append(iter_model_backwarded_time - iter_data_forwarded_time)                             
+                model_backward_time.append(iter_model_backwarded_time - iter_data_forwarded_time)
 
             # Display
             if(total_steps // opt.batch_size % opt.display_freq == 0):
@@ -147,7 +147,7 @@ def main():
                     data_loading_time = []
                     model_forward_time = []
                     model_backward_time = []
-                print('end of display \n')                
+                print('end of display \n')
 
             # Save latest
             if(total_steps // opt.batch_size % opt.save_latest_freq == 0):
@@ -187,7 +187,6 @@ def main():
 
 
     if opt.tensorboard:
-        print(vars(opt))
         writer.add_hparams(vars(opt), metric_dict)
 
 if __name__ == '__main__':

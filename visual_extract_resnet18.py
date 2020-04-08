@@ -14,7 +14,7 @@ import random
 class frame_data(Dataset):
 
     def __init__(self):
-        root_dir = "data\\frame"
+        root_dir = "data\\split-2\\frame"
         frames = os.listdir(root_dir)
         self.frames = [os.path.join(root_dir, i) for i in frames]
 
@@ -37,6 +37,7 @@ class frame_data(Dataset):
         return trans(frame)
 
     def __process_image(self, image, augment):
+        # image = image.resize((448,224))
         image = image.resize((480,240))
         w,h = image.size
         w_offset = w - 448
@@ -58,9 +59,9 @@ class frame_data(Dataset):
 
     def __getitem__(self, idx):
         frame_data = Image.open(self.frames[idx]).convert('RGB')
-        #frame_data = frame_data.resize((448,224))
         frame_data = self.__process_image(frame_data, True)
-        frame_data = self.__transform(frame_data)
+        frame_data = torchvision.transforms.ToTensor()(frame_data)
+        # frame_data = self.__transform(frame_data)
         return frame_data
 
 
@@ -68,7 +69,7 @@ def main():
 
     # Custom dataset
     dataset = frame_data()
-    frame_loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=2)
+    frame_loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=4)
 
     # Load pre-trained resnet18
     resnet = torchvision.models.resnet18(pretrained=True)
@@ -76,7 +77,7 @@ def main():
     layers = list(resnet.children())[0:-2]
     visual_extraction = torch.nn.Sequential(*layers) 
 
-    writer = SummaryWriter(log_dir='Log/visual_extract_resnet18_cropped')
+    writer = SummaryWriter(comment='visual_extract_resnet18')
     writer.add_graph(visual_extraction, next(iter(frame_loader)))
 
     # Run with GPU
@@ -100,7 +101,7 @@ def main():
     
     # Write to file as numpy array
     feature_list = np.array(feature_list)
-    with h5py.File('data/visual_extract_resnet18_cropped.h5', 'w') as f:
+    with h5py.File('data/split-2/visual_extract_resnet18.h5', 'w') as f:
         dset = f.create_dataset('features', data=feature_list)
 
 if __name__ == "__main__":

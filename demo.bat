@@ -1,1 +1,1 @@
-python demo.py --weights_audio checkpoints/default/model_best.pth --input_audio_path demo/data/000003.wav --input_video_path demo/data/000003.mp4 --output_dir_root demo/output --comment default --hop_size 0.2
+python demo.py --input_audio_path demo/data/000003.wav --input_video_path demo/data/000003.mp4 --weights_visual trained_model/visual_model.pth --weights_audio trained_model/audio_model.pth --output_dir_root demo/output_dir_root --input_audio_length 10 --hop_size 0.05

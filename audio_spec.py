@@ -18,7 +18,7 @@ def normalize(samples, desired_rms = 0.1, eps = 1e-4):
   return samples
 
 def main():
-    audio_dir = 'data\\audio_seg'
+    audio_dir = 'data\\split-2\\audio_seg'
     audios = os.listdir(audio_dir)
     audios = [os.path.join(audio_dir, i) for i in audios]
 
@@ -26,7 +26,7 @@ def main():
     audio_diff_spec_list = []
 
     for index in tqdm(range(len(audios))):
-        audio, sample_rate = librosa.load(audios[index], mono=False, sr=None)
+        audio, sample_rate = librosa.load(audios[index], mono=False, sr=16000)
 
         audio = normalize(audio)
 
@@ -48,10 +48,10 @@ def main():
     audio_mix_spec_list = np.array(audio_mix_spec_list)
     audio_diff_spec_list = np.array(audio_diff_spec_list)
 
-    with h5py.File('data/audio_mix_spec.h5', 'w') as f:
+    with h5py.File('data\\split-2\\audio_mix_spec.h5', 'w') as f:
         f.create_dataset('audio_mix_spec', data=audio_mix_spec_list)
 
-    with h5py.File('data/audio_diff_spec.h5', 'w') as f:
+    with h5py.File('data\\split-2\\audio_diff_spec.h5', 'w') as f:
         f.create_dataset('audio_diff_spec', data=audio_diff_spec_list)
 
 if __name__ == "__main__":
