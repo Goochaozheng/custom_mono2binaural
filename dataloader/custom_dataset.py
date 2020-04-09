@@ -19,16 +19,16 @@ class CustomDataset(torch.utils.data.Dataset):
         self.data_source = h5py.File(path)
 
     def __len__(self):
-        return len(self.data_source['visual_feature'])
+        return len(self.data_source['frame'])
 
     def __getitem__(self, idx):
 
-        visual_feature = torch.FloatTensor(self.data_source['visual_feature'][idx])
-        audio_mix = torch.FloatTensor(self.data_source['audio_mix'][idx])
-        aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx])
+        frame = torch.FloatTensor(self.data_source['frame'][idx], requires_grad=False)
+        audio_mix = torch.FloatTensor(self.data_source['audio_mix'][idx], requires_grad=False)
+        aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx], requires_grad=False)
 
         data = {
-            'visual_feature': visual_feature,
+            'frame': frame,
             'audio_mix': audio_mix,
             'audio_diff': aduio_diff
         }

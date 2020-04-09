@@ -185,7 +185,6 @@ def main():
                 param_group['lr'] *= opt.decay_factor
             print('decreased learning rate by ', opt.decay_factor)        
 
-
     if opt.tensorboard:
         writer.add_hparams(vars(opt), metric_dict)
 

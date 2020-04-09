@@ -15,6 +15,7 @@ from torch import optim
 import torch.nn.functional as F
 from . import networks,criterion
 from torch.autograd import Variable
+import torchvision
 
 class AudioVisualModel(torch.nn.Module):
     def name(self):
@@ -29,12 +30,16 @@ class AudioVisualModel(torch.nn.Module):
             input_nc=opt.unet_input_nc,
             output_nc=opt.unet_output_nc
         )
+        resnet = torchvision.models.resnet18(pretrained=True)
+        layers = list(resnet.children())[0:-2]
+        self.visual_extract = torch.nn.Sequential(*layers) 
 
     def forward(self, input, volatile=False):
-        visual_feature = input['visual_feature'].cuda()
+        frame = input['frame'].cuda()
         audio_diff = input['audio_diff'].cuda()
         audio_mix = input['audio_mix'].cuda()
 
+        visual_feature = self.visual_extract(frame) # Resnet-18
         mask_prediction = self.u_net(audio_mix, visual_feature) # U-Net
 
         # complex masking to obtain the predicted spectrogram
