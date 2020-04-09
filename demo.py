@@ -41,16 +41,16 @@ def main():
 	opt.mode = 'test'
 
 	# load model weights
-	weights = torch.load(opt.weights_audio)
-	model = AudioVisualModel(opt)
-	model.load_state_dict(weights)
-	model.to(device)
-	model.eval()
-
-	# load model
-	# model = torch.load(opt.model_path)
+	# weights = torch.load(opt.weights_audio)
+	# model = AudioVisualModel(opt)
+	# model.load_state_dict(weights)
 	# model.to(device)
 	# model.eval()
+
+	# load model
+	model = torch.load(opt.model_path)
+	model.to(device)
+	model.eval()
 
 	# load resnet 
 	resnet = torchvision.models.resnet18(pretrained=True)
