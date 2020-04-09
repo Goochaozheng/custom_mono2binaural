@@ -4,6 +4,7 @@ import librosa
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import torchvision.transforms as transforms
 
 class CustomDataset(torch.utils.data.Dataset):
 
@@ -23,7 +24,7 @@ class CustomDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
 
-        frame = torch.FloatTensor(self.data_source['frame'][idx])
+        frame = transforms.ToTensor()(self.data_source['frame'][idx])
         audio_mix = torch.FloatTensor(self.data_source['audio_mix'][idx])
         aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx])
 
