@@ -110,12 +110,13 @@ def main():
 		frame = Image.fromarray(frame)
 		frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
 
-		# frame = frame.to(device)
-		visual_feature = visual_extraction(frame)
-		data['visual_feature'] = visual_feature
+		with torch.no_grad():
+			frame = frame.to(device)
+			visual_feature = visual_extraction(frame)
+			data['visual_feature'] = visual_feature
 
-		output = model.forward(data)
-		predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+			output = model.forward(data)
+			predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
 		# display test err
 		loss_criterion = torch.nn.MSELoss()
@@ -157,12 +158,14 @@ def main():
 	frame = Image.fromarray(frame)
 	frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
 
-	frame = frame.to(device)
-	visual_feature = visual_extraction(frame)
-	data['visual_feature'] = visual_feature
+	with torch.no_grad():
+		frame = frame.to(device)
+		visual_feature = visual_extraction(frame)
+		data['visual_feature'] = visual_feature
 
-	output = model.forward(data)
-	predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+		output = model.forward(data)
+		predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+		
 	#ISTFT to convert back to audio
 	reconstructed_stft_diff = predicted_spectrogram[0,:,:] + (1j * predicted_spectrogram[1,:,:])
 	reconstructed_signal_diff = librosa.istft(reconstructed_stft_diff, hop_length=160, win_length=400, center=True, length=samples_per_window)
