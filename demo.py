@@ -52,6 +52,8 @@ def main():
 	model.to(device)
 	model.eval()
 
+
+
 	# load resnet 
 	resnet = torchvision.models.resnet18(pretrained=True)
 	layers = list(resnet.children())[0:-2]
@@ -84,6 +86,9 @@ def main():
 	count = 0
 
 	while sliding_window_start + samples_per_window < audio.shape[-1]:
+
+		print("Process window")
+
 		sliding_window_end = sliding_window_start + samples_per_window
 		normalizer, audio_segment = audio_normalize(audio[:,sliding_window_start:sliding_window_end])
 		audio_segment_channel1 = audio_segment[0,:]
