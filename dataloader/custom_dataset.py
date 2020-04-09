@@ -24,10 +24,9 @@ class CustomDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
 
-        frame = transforms.ToTensor()(self.data_source['frame'][idx])
-        frame = torch.FloatTensor(frame)
-        audio_mix = torch.FloatTensor(self.data_source['audio_mix'][idx])
-        aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx])
+        frame = transforms.ToTensor()(self.data_source['frame'][idx]).float().cuda()
+        audio_mix = torch.FloatTensor(self.data_source['audio_mix'][idx]).cuda()
+        aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx]).cuda()
 
         data = {
             'frame': frame,
