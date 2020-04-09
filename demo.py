@@ -110,7 +110,7 @@ def main():
 		frame = Image.fromarray(frame)
 		frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
 
-		frame = frame.to(device)
+		# frame = frame.to(device)
 		visual_feature = visual_extraction(frame)
 		data['visual_feature'] = visual_feature
 
