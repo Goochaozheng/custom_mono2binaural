@@ -24,7 +24,7 @@ class CustomDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
 
-        visual_feature = transforms.ToTensor()(self.data_source['visual_feature'][idx]).float().cuda()
+        visual_feature = torch.FloatTensor(self.data_source['visual_feature'][idx]).cuda()
         audio_mix = torch.FloatTensor(self.data_source['audio_mix'][idx]).cuda()
         aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx]).cuda()
 
