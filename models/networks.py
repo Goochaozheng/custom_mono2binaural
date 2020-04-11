@@ -47,15 +47,16 @@ def weights_init(m):
         m.weight.data.normal_(0.0, 0.02)
 
 # ResNet-18
-# class VisualNet(nn.Module):
-#     def __init__(self, original_resnet):
-#         super(VisualNet, self).__init__()
-#         layers = list(original_resnet.children())[0:-2]
-#         self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
+class VisualNet(nn.Module):
+    def __init__(self):
+        super(VisualNet, self).__init__()
+        original_resnet = torchvision.models.resnet18(pretrained=True)
+        layers = list(original_resnet.children())[0:-2]
+        self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
 
-#     def forward(self, x):
-#         x = self.feature_extraction(x)
-#         return x
+    def forward(self, x):
+        x = self.feature_extraction(x)
+        return x
 
 # U-Net
 class AudioNet(nn.Module):
