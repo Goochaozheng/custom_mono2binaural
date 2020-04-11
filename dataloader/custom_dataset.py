@@ -20,7 +20,7 @@ class CustomDataset(torch.utils.data.Dataset):
         self.data_source = h5py.File(path)
 
     def __len__(self):
-        return len(self.data_source['frame'])
+        return len(self.data_source['audio_mix'])
 
     def __getitem__(self, idx):
 
