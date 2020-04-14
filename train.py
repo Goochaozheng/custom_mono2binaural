@@ -183,7 +183,7 @@ def main():
         if(opt.learning_rate_decrease_itr > 0 and epoch%opt.learning_rate_decrease_itr == 0):
             for param_group in optimizer.param_groups:
                 param_group['lr'] *= opt.decay_factor
-            print('decreased learning rate by ', opt.decay_factor)        
+            print('decreased learning rate by ', opt.decay_factor)
 
     if opt.tensorboard:
         writer.add_hparams(vars(opt), metric_dict)

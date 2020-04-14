@@ -15,16 +15,18 @@ import functools
 
 def unet_conv(input_nc, output_nc, norm_layer=nn.BatchNorm2d):
     downconv = nn.Conv2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
+    dropout = nn.Dropout2d(p=0.5)
     downrelu = nn.LeakyReLU(0.2, True)
     downnorm = norm_layer(output_nc)
-    return nn.Sequential(*[downconv, downnorm, downrelu])
+    return nn.Sequential(*[downconv, downnorm, dropout, downrelu])
 
 def unet_upconv(input_nc, output_nc, outermost=False, norm_layer=nn.BatchNorm2d):
     upconv = nn.ConvTranspose2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
+    dropout = nn.Dropout2d(p=0.5)
     uprelu = nn.ReLU(inplace=True)
     upnorm = norm_layer(output_nc)
     if not outermost:
-        return nn.Sequential(*[upconv, upnorm, uprelu])
+        return nn.Sequential(*[upconv, upnorm, dropout, uprelu])
     else:
         return nn.Sequential(*[upconv, nn.Sigmoid()])
         
@@ -37,6 +39,7 @@ def create_conv(input_channels, output_channels, kernel, paddings, batch_norm=Tr
     return nn.Sequential(*model)
 
 def weights_init(m):
+    #initialize weights normal_(mean, std)
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
         m.weight.data.normal_(0.0, 0.02)
@@ -68,13 +71,16 @@ class AudioNet(nn.Module):
         self.audionet_convlayer3 = unet_conv(ngf * 2, ngf * 4)
         self.audionet_convlayer4 = unet_conv(ngf * 4, ngf * 8)
         self.audionet_convlayer5 = unet_conv(ngf * 8, ngf * 8)
+
         self.audionet_upconvlayer1 = unet_upconv(1296, ngf * 8) 
         #1296 (audio-visual feature) = 784 (visual feature) + 512 (audio feature)
         self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf *4)
         self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf * 2)
         self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf)
         self.audionet_upconvlayer5 = unet_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
+
         self.conv1x1 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
+
 
     def forward(self, x, visual_feat):
         audio_conv1feature = self.audionet_convlayer1(x)
@@ -93,5 +99,6 @@ class AudioNet(nn.Module):
         audio_upconv2feature = self.audionet_upconvlayer2(torch.cat((audio_upconv1feature, audio_conv4feature), dim=1))
         audio_upconv3feature = self.audionet_upconvlayer3(torch.cat((audio_upconv2feature, audio_conv3feature), dim=1))
         audio_upconv4feature = self.audionet_upconvlayer4(torch.cat((audio_upconv3feature, audio_conv2feature), dim=1))
+        # ??
         mask_prediction = self.audionet_upconvlayer5(torch.cat((audio_upconv4feature, audio_conv1feature), dim=1)) * 2 - 1
         return mask_prediction
