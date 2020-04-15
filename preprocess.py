@@ -31,7 +31,7 @@ def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
 
 def frame_tranform(frame):
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame = cv2.resize(frame, (448,224))
+    frame = cv2.resize(frame, (256,128))
     normalize = torchvision.transforms.Normalize(
         mean=[0.485, 0.456, 0.406],
         std=[0.229, 0.224, 0.225]
@@ -62,7 +62,7 @@ def main():
 
     audio_mix_spec_list = np.empty(shape=(0,2,257,64))
     audio_diff_spec_list = np.empty(shape=(0,2,257,64))
-    visual_feature_list = np.empty(shape=(0,512,7,14))
+    visual_feature_list = np.empty(shape=(0,512,4,8))
 
     # Load pre-trained resnet18
     resnet = torchvision.models.resnet18(pretrained=True)
@@ -145,7 +145,7 @@ def main():
         if (i+1)%100 == 0 or i == DATASET_SIZE-1:
             #write visual feature
             write_hdf5('visual_feature.h5', visual_feature_list)
-            visual_feature_list = np.empty(shape=(0,512,7,14))
+            visual_feature_list = np.empty(shape=(0,512,4,8))
       
         del video      
 
