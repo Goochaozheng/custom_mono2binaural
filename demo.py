@@ -101,6 +101,7 @@ def main():
 		flag, frame = video.read()
 		if not flag:
 			print(video.get(cv2.CAP_PROP_POS_FRAMES))
+			print(video.get(cv2.CAP_PROP_FRAME_COUNT))
 			exit("Read frame fail")
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		frame = Image.fromarray(frame)
@@ -148,6 +149,7 @@ def main():
 	flag, frame = video.read()
 	if not flag:
 		print(video.get(cv2.CAP_PROP_POS_FRAMES))
+		print(video.get(cv2.CAP_PROP_FRAME_COUNT))
 		exit("Read frame fail")
 
 	frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
