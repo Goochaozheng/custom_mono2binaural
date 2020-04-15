@@ -30,8 +30,8 @@ class CustomDataset(torch.utils.data.Dataset):
         aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx])
 
         data = {
-            # 'visual_feature': visual_feature,
-            'frame': frame,
+            'visual_feature': visual_feature,
+            # 'frame': frame,
             'audio_mix': audio_mix,
             'audio_diff': aduio_diff
         }
