@@ -52,8 +52,6 @@ def main():
 	model.to(device)
 	model.eval()
 
-
-
 	# load resnet 
 	resnet = torchvision.models.resnet18(pretrained=True)
 	layers = list(resnet.children())[0:-2]
