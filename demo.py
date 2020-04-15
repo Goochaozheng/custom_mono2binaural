@@ -94,7 +94,7 @@ def main():
 		data['audio_diff'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 - audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
 		data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
 		#get the frame index for current window
-		frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * fps)
+		frame_index = int(((((sliding_window_start + samples_per_window) / 2.0) / audio.shape[-1]) * opt.input_audio_length) * fps)
 
 		#Read frame
 		video.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
@@ -143,7 +143,7 @@ def main():
 	data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
 	#get the frame index for last window
 	
-	frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * fps)
+	frame_index = int(((((sliding_window_start + samples_per_window) / 2.0) / audio.shape[-1]) * opt.input_audio_length) * fps)
 
 	video.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
 	flag, frame = video.read()
