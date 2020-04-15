@@ -30,7 +30,7 @@ class AudioVisualModel(torch.nn.Module):
             input_nc=opt.unet_input_nc,
             output_nc=opt.unet_output_nc
         )
-        self.visual_extract = networks.VisualNet()
+        # self.visual_extract = networks.VisualNet()
 
     def forward(self, input, volatile=False):
         visual_feature = input['visual_feature'].cuda()
