@@ -89,7 +89,7 @@ class AudioNet(nn.Module):
         self.visual_pooling = nn.AdaptiveAvgPool2d((8,2))
 
     def forward(self, x, visual_feat):
-        audio_conv1feature = self.audionet_convlayer1(x[:,:,:-1,:])
+        audio_conv1feature = self.audionet_convlayer1(x)
         audio_conv2feature = self.audionet_convlayer2(audio_conv1feature)
         audio_conv3feature = self.audionet_convlayer3(audio_conv2feature)
         audio_conv4feature = self.audionet_convlayer4(audio_conv3feature)
