@@ -13,7 +13,7 @@ VIDEO_DIR = "H:\\FAIR-Play\\FAIR-Play\\videos"
 
 SEGMENT_LENGTH = 0.63
 DATASET_SIZE = 5000
-OUTPUT_DIR = 'data\\split-4\\'
+OUTPUT_DIR = 'data\\split-5\\'
 
 def generate_spectrogram(audio):
     spectro = librosa.core.stft(audio, n_fft=512, hop_length=160, win_length=400, center=True)

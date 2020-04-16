@@ -4,10 +4,10 @@ import os
 import random
 import numpy as np
 
-visual_feature_path = 'data\\split-4\\visual_feature.h5'
-diff_spec_path = 'data\\split-4\\audio_diff_spec.h5'
-mix_spec_path = 'data\\split-4\\audio_mix_spec.h5'
-output_path = 'data\\split-4\\'
+visual_feature_path = 'data\\split-5\\visual_feature.h5'
+diff_spec_path = 'data\\split-5\\audio_diff_spec.h5'
+mix_spec_path = 'data\\split-5\\audio_mix_spec.h5'
+output_path = 'data\\split-5\\'
 
 def main():
 
