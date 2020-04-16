@@ -99,10 +99,10 @@ class AudioNet(nn.Module):
         # visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
         
         #preserve channels
-        audio_conv5feature = audio_conv5feature.repeat(1,1,1,2)# (, 512, 8, 4)
+        audio_convfeature = audio_convfeature.repeat(1,1,1,2)# (, 512, 8, 4)
         visual_feat = visual_feat.transpose(2,3)# (, 512, 8, 4)
 
-        audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
+        audioVisual_feature = torch.cat((visual_feat, audio_convfeature), dim=1)
         
         audio_upconvfeature = self.audionet_upconvlayer1(audioVisual_feature)
         audio_upconvfeature = self.audionet_upconvlayer2(audio_upconvfeature)
