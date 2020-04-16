@@ -101,6 +101,10 @@ class AudioNet(nn.Module):
         #preserve channels
         audio_conv5feature = audio_conv5feature.repeat(1,1,1,2)# (, 512, 8, 4)
         visual_feat = visual_feat.transpose(2,3)# (, 512, 8, 4)
+
+        print(audio_conv5feature.shape)
+        print(visual_feat.shape)
+
         audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
