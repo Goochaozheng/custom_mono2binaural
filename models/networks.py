@@ -75,12 +75,12 @@ class AudioNet(nn.Module):
 
         # self.audionet_upconvlayer1 = unet_upconv(1296, ngf * 8) 
         #1296 (audio-visual feature) = 784 (visual feature) + 512 (audio feature)
-        self.audionet_upconvlayer1 = unet_upconv(1024, ngf *16) 
+        self.audionet_upconvlayer1 = unet_upconv(1024, ngf *8) 
         #1024 = 512 (visual feature) + 512 (audio feature)
 
-        self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf*8)
-        self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf*4)
-        self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf*2)
+        self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf*4)
+        self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf*2)
+        self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf)
         self.audionet_upconvlayer5 = unet_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
 
         self.conv1x1 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
@@ -101,7 +101,7 @@ class AudioNet(nn.Module):
         # visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
         
         #pooling & preserve channels
-        visual_feat = visual_pooling(visual_feat)# (, 512, 8, 2)
+        visual_feat = self.visual_pooling(visual_feat)# (, 512, 8, 2)
         audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
