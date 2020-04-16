@@ -75,23 +75,23 @@ class AudioNet(nn.Module):
 
         # self.audionet_upconvlayer1 = unet_upconv(1296, ngf * 8) 
         #1296 (audio-visual feature) = 784 (visual feature) + 512 (audio feature)
-        self.audionet_upconvlayer1 = unet_upconv(1024, ngf * 8) 
+        self.audionet_upconvlayer1 = unet_upconv(1024, ngf*16) 
         #1024 = 512 (visual feature) + 512 (audio feature)
 
-        self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf *4)
-        self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf * 2)
-        self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf)
+        self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf*8)
+        self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf*4)
+        self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf*2)
         self.audionet_upconvlayer5 = unet_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
 
         self.conv1x1 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
         # channel#: 512 -> 8
 
     def forward(self, x, visual_feat):
-        audio_conv1feature = self.audionet_convlayer1(x)
-        audio_conv2feature = self.audionet_convlayer2(audio_conv1feature)
-        audio_conv3feature = self.audionet_convlayer3(audio_conv2feature)
-        audio_conv4feature = self.audionet_convlayer4(audio_conv3feature)
-        audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)# (, 512, 8, 2)
+        audio_convfeature = self.audionet_convlayer1(x)
+        audio_convfeature = self.audionet_convlayer2(audio_convfeature)
+        audio_convfeature = self.audionet_convlayer3(audio_convfeature)
+        audio_convfeature = self.audionet_convlayer4(audio_convfeature)
+        audio_convfeature = self.audionet_convlayer5(audio_convfeature)# (, 512, 8, 2)
 
         #flatten & repeat
         # visual_feat = self.conv1x1(visual_feat)
@@ -102,16 +102,13 @@ class AudioNet(nn.Module):
         audio_conv5feature = audio_conv5feature.repeat(1,1,1,2)# (, 512, 8, 4)
         visual_feat = visual_feat.transpose(2,3)# (, 512, 8, 4)
 
-        print(audio_conv5feature.shape)
-        print(visual_feat.shape)
-
         audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
-        audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
-        audio_upconv2feature = self.audionet_upconvlayer2(torch.cat((audio_upconv1feature, audio_conv4feature), dim=1))
-        audio_upconv3feature = self.audionet_upconvlayer3(torch.cat((audio_upconv2feature, audio_conv3feature), dim=1))
-        audio_upconv4feature = self.audionet_upconvlayer4(torch.cat((audio_upconv3feature, audio_conv2feature), dim=1))
+        audio_upconvfeature = self.audionet_upconvlayer1(audioVisual_feature)
+        audio_upconvfeature = self.audionet_upconvlayer2(audio_upconvfeature)
+        audio_upconvfeature = self.audionet_upconvlayer3(audio_upconvfeature)
+        audio_upconvfeature = self.audionet_upconvlayer4(audio_upconvfeature)
         # ??
         # mask_prediction = self.audionet_upconvlayer5(torch.cat((audio_upconv4feature, audio_conv1feature), dim=1)) * 2 - 1
-        mask_prediction = self.audionet_upconvlayer5(torch.cat((audio_upconv4feature, audio_conv1feature), dim=1))
+        mask_prediction = self.audionet_upconvlayer5(audio_upconvfeature)
         return mask_prediction
