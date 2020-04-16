@@ -96,13 +96,13 @@ class AudioNet(nn.Module):
         audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)# (, 512, 8, 2)
 
         #flatten & repeat
-        # visual_feat = self.conv1x1(visual_feat)
-        # visual_feat = visual_feat.view(visual_feat.shape[0], -1, 1, 1) #flatten visual feature
-        # visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
+        visual_feat = self.conv1x1(visual_feat)
+        visual_feat = visual_feat.view(visual_feat.shape[0], -1, 1, 1) #flatten visual feature
+        visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
         
         #pooling & preserve channels
-        visual_feat = self.visual_pooling(visual_feat)# (, 512, 8, 2)
-        audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
+        # visual_feat = self.visual_pooling(visual_feat)# (, 512, 8, 2)
+        # audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
         audio_upconv2feature = self.audionet_upconvlayer2(torch.cat((audio_upconv1feature, audio_conv4feature), dim=1))
