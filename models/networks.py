@@ -102,7 +102,8 @@ class AudioNet(nn.Module):
         
         #pooling & preserve channels
         # visual_feat = self.visual_pooling(visual_feat)# (, 512, 8, 2)
-        # audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
+        
+        audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
         audio_upconv2feature = self.audionet_upconvlayer2(torch.cat((audio_upconv1feature, audio_conv4feature), dim=1))
