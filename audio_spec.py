@@ -7,6 +7,7 @@ import torch
 
 def generate_spectrogram(audio):
     spectro = librosa.core.stft(audio, n_fft=512, hop_length=160, win_length=400, center=True)
+    # spectro = spectro[:-1,:]
     real = np.expand_dims(np.real(spectro), axis=0)
     imag = np.expand_dims(np.imag(spectro), axis=0)
     spectro_two_channel = np.concatenate((real, imag), axis=0)
@@ -38,9 +39,9 @@ def main():
         audio_mix_spec = generate_spectrogram(audio_mix)
         audio_diff_spec = generate_spectrogram(audio_diff)
 
-        if audio_diff_spec.shape != (2, 257, 64) or audio_mix_spec.shape != (2, 257, 64):
-            print(index)
-            break
+        # if audio_diff_spec.shape != (2, 257, 64) or audio_mix_spec.shape != (2, 257, 64):
+        #     print(index)
+        #     break
 
         audio_mix_spec_list.append(audio_mix_spec)
         audio_diff_spec_list.append(audio_diff_spec)
