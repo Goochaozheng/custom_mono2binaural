@@ -106,7 +106,8 @@ class AudioNet(nn.Module):
 
         #Conv
         visual_feat = self.visual_conv(visual_feat)
-
+        visual_feat = visual_feat.transpose(2,3)
+        
         audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
