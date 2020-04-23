@@ -73,9 +73,9 @@ class AudioNet(nn.Module):
         self.audionet_convlayer4 = unet_conv(ngf * 4, ngf * 8)
         self.audionet_convlayer5 = unet_conv(ngf * 8, ngf * 8)
 
-        self.audionet_upconvlayer1 = unet_upconv(1296, ngf * 8) 
+        # self.audionet_upconvlayer1 = unet_upconv(1296, ngf * 8) 
         #1296 (audio-visual feature) = 784 (visual feature) + 512 (audio feature)
-        # self.audionet_upconvlayer1 = unet_upconv(1024, ngf *8) 
+        self.audionet_upconvlayer1 = unet_upconv(1024, ngf *8) 
         #1024 = 512 (visual feature) + 512 (audio feature)
 
         self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf*4)
@@ -107,7 +107,7 @@ class AudioNet(nn.Module):
         #Conv
         visual_feat = self.visual_conv(visual_feat)
         visual_feat = visual_feat.transpose(2,3)
-        
+
         audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
