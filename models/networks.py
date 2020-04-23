@@ -87,6 +87,7 @@ class AudioNet(nn.Module):
         # channel#: 512 -> 8
         
         self.visual_pooling = nn.AdaptiveAvgPool2d((8,2))
+        self.visual_conv = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=(2,1), stride=(2,1), padding=0)
 
     def forward(self, x, visual_feat):
         audio_conv1feature = self.audionet_convlayer1(x)
@@ -96,12 +97,15 @@ class AudioNet(nn.Module):
         audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)# (, 512, 8, 2)
 
         #flatten & repeat
-        visual_feat = self.conv1x1(visual_feat)
-        visual_feat = visual_feat.view(visual_feat.shape[0], -1, 1, 1) #flatten visual feature
-        visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
+        # visual_feat = self.conv1x1(visual_feat)
+        # visual_feat = visual_feat.view(visual_feat.shape[0], -1, 1, 1) #flatten visual feature
+        # visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
         
         #pooling & preserve channels
         # visual_feat = self.visual_pooling(visual_feat)# (, 512, 8, 2)
+
+        #Conv
+        visual_feat = self.visual_conv(visual_feat)
 
         audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
