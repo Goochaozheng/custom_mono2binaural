@@ -119,8 +119,8 @@ class AudioNet(nn.Module):
         # Video encode
         video_res1feature = self.residual_block1(visual_frame) #(, 64, 32, 64)
         video_res2feature = self.residual_block2(video_res1feature) #(, 128, 16, 32)
-        video_res3feature = self.residual_block3(video_res1feature) #(, 256, 8, 16)
-        video_res4feature = self.residual_block4(video_res1feature) #(, 512, 4, 8)
+        video_res3feature = self.residual_block3(video_res2feature) #(, 256, 8, 16)
+        video_res4feature = self.residual_block4(video_res3feature) #(, 512, 4, 8)
         #Conv
         video_res5feature = self.visual_conv(video_res4feature)
         video_res5feature = video_res5feature.transpose(2,3)
