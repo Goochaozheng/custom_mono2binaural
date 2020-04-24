@@ -12,21 +12,21 @@ import time
 
 def create_optimizer(model, opt):
 
-    param_group = [ {'params':model.residual_block1.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.residual_block2.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.residual_block3.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.residual_block4.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.audionet_convlayer1.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.audionet_convlayer2.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.audionet_convlayer3.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.audionet_convlayer4.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.audionet_convlayer5.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.audionet_upconvlayer1.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.audionet_upconvlayer2.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.audionet_upconvlayer3.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.audionet_upconvlayer4.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.audionet_upconvlayer5.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.visual_conv.parameters(), 'lr': opt.lr_gen}
+    param_group = [ {'params':model.u_net.residual_block1.parameters(), 'lr': opt.lr_visual},
+                    {'params':model.u_net.residual_block2.parameters(), 'lr': opt.lr_visual},
+                    {'params':model.u_net.residual_block3.parameters(), 'lr': opt.lr_visual},
+                    {'params':model.u_net.residual_block4.parameters(), 'lr': opt.lr_visual},
+                    {'params':model.u_net.audionet_convlayer1.parameters(), 'lr': opt.lr_audio},
+                    {'params':model.u_net.audionet_convlayer2.parameters(), 'lr': opt.lr_audio},
+                    {'params':model.u_net.audionet_convlayer3.parameters(), 'lr': opt.lr_audio},
+                    {'params':model.u_net.audionet_convlayer4.parameters(), 'lr': opt.lr_audio},
+                    {'params':model.u_net.audionet_convlayer5.parameters(), 'lr': opt.lr_audio},
+                    {'params':model.u_net.audionet_upconvlayer1.parameters(), 'lr': opt.lr_gen},
+                    {'params':model.u_net.audionet_upconvlayer2.parameters(), 'lr': opt.lr_gen},
+                    {'params':model.u_net.audionet_upconvlayer3.parameters(), 'lr': opt.lr_gen},
+                    {'params':model.u_net.audionet_upconvlayer4.parameters(), 'lr': opt.lr_gen},
+                    {'params':model.u_net.audionet_upconvlayer5.parameters(), 'lr': opt.lr_gen},
+                    {'params':model.u_net.visual_conv.parameters(), 'lr': opt.lr_gen}
                     ]
 
     if opt.optimizer == 'sgd':
