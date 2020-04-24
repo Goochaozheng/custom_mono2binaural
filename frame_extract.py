@@ -9,8 +9,8 @@ import random
 frame_dir = 'data\\split-2\\frame'
 h5_path = 'data\\split-2\\frame.h5'
 
-mean = [0.41830324, 0.35137988, 0.31830999]
-std = [0.26464085, 0.22256009, 0.23320136]
+# mean = [0.41830324, 0.35137988, 0.31830999]
+# std = [0.26464085, 0.22256009, 0.23320136]
 
 def mian():
 
@@ -30,8 +30,8 @@ def mian():
             # color_enhancer = ImageEnhance.Color(image)
             # image = color_enhancer.enhance(random.random()*0.6 + 0.7)
             #normalization
-            image_array = np.array(image) / 255
-            image_array = (image_array - mean) / std
+            # image_array = np.array(image) / 255
+            # image_array = (image_array - mean) / std
 
             frame_list = np.concatenate([frame_list, [image_array]])
             

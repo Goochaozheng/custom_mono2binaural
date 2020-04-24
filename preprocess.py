@@ -13,7 +13,7 @@ VIDEO_DIR = "H:\\FAIR-Play\\FAIR-Play\\videos"
 
 SEGMENT_LENGTH = 0.63
 DATASET_SIZE = 5000
-OUTPUT_DIR = 'data\\split-5\\'
+OUTPUT_DIR = 'data\\split-6\\'
 
 def generate_spectrogram(audio):
     spectro = librosa.core.stft(audio, n_fft=512, hop_length=160, win_length=400, center=True)
@@ -32,13 +32,12 @@ def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
 def frame_tranform(frame):
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame = cv2.resize(frame, (256,128))
-    normalize = torchvision.transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225]
-    )
-    vision_transform_list = torchvision.transforms.Compose([torchvision.transforms.ToTensor(), normalize])
-    frame = vision_transform_list(frame)
-    frame = frame.unsqueeze(0).cuda()
+    # normalize = torchvision.transforms.Normalize(
+    #     mean=[0.485, 0.456, 0.406],
+    #     std=[0.229, 0.224, 0.225]
+    # )
+    # vision_transform_list = torchvision.transforms.Compose([torchvision.transforms.ToTensor(), normalize])
+    frame = torchvision.transforms.ToTensor()(frame).numpy()
     return frame
 
 
@@ -62,13 +61,14 @@ def main():
 
     audio_mix_spec_list = np.empty(shape=(0,2,257,64))
     audio_diff_spec_list = np.empty(shape=(0,2,257,64))
-    visual_feature_list = np.empty(shape=(0,512,4,8))
+    # visual_feature_list = np.empty(shape=(0,512,4,8))
+    frame_list = np.empty(shape=(0,3,128,256))
 
     # Load pre-trained resnet18
-    resnet = torchvision.models.resnet18(pretrained=True)
-    layers = list(resnet.children())[0:-2]
-    visual_extraction = torch.nn.Sequential(*layers) 
-    visual_extraction.to("cuda:0")
+    # resnet = torchvision.models.resnet18(pretrained=True)
+    # layers = list(resnet.children())[0:-2]
+    # visual_extraction = torch.nn.Sequential(*layers) 
+    # visual_extraction.to("cuda:0")
 
     for i in tqdm(range(DATASET_SIZE), ascii=True):
         
@@ -135,17 +135,19 @@ def main():
         frame = frame_tranform(frame)
 
         # extract visual feature
-        with torch.no_grad():
-            visual_feature = visual_extraction(frame)
+        # with torch.no_grad():
+        #     visual_feature = visual_extraction(frame)
 
-        visual_feature = visual_feature.cpu().numpy()
-        visual_feature_list = np.concatenate([visual_feature_list, visual_feature])
+        # visual_feature = visual_feature.cpu().numpy()
+        # visual_feature_list = np.concatenate([visual_feature_list, visual_feature])
+
+        frame_list = np.concatenate([frame_list, [frame]])
 
         # write to hdf5
         if (i+1)%100 == 0 or i == DATASET_SIZE-1:
             #write visual feature
-            write_hdf5('visual_feature.h5', visual_feature_list)
-            visual_feature_list = np.empty(shape=(0,512,4,8))
+            write_hdf5('frame.h5', frame_list)
+            frame_list = np.empty(shape=(0,3,128,256))
       
         del video      
 
