@@ -12,10 +12,10 @@ import time
 
 def create_optimizer(model, opt):
 
-    param_group = [ {'params':model.u_net.residual_block1.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.u_net.residual_block2.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.u_net.residual_block3.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.u_net.residual_block4.parameters(), 'lr': opt.lr_visual},
+    param_group = [ #{'params':model.u_net.residual_block1.parameters(), 'lr': opt.lr_visual},
+                    #{'params':model.u_net.residual_block2.parameters(), 'lr': opt.lr_visual},
+                    #{'params':model.u_net.residual_block3.parameters(), 'lr': opt.lr_visual},
+                    #{'params':model.u_net.residual_block4.parameters(), 'lr': opt.lr_visual},
                     {'params':model.u_net.audionet_convlayer1.parameters(), 'lr': opt.lr_audio},
                     {'params':model.u_net.audionet_convlayer2.parameters(), 'lr': opt.lr_audio},
                     {'params':model.u_net.audionet_convlayer3.parameters(), 'lr': opt.lr_audio},

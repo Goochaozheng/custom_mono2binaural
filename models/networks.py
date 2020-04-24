@@ -62,7 +62,6 @@ class VisualNet(nn.Module):
         x = self.feature_extraction(x)
         return x
 
-
 # U-Net
 class AudioNet(nn.Module):
     def __init__(self, ngf=64, input_nc=2, output_nc=2):
@@ -117,10 +116,12 @@ class AudioNet(nn.Module):
         audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)# (, 512, 8, 2)
 
         # Video encode
-        video_res1feature = self.residual_block1(visual_frame) #(, 64, 32, 64)
-        video_res2feature = self.residual_block2(video_res1feature) #(, 128, 16, 32)
-        video_res3feature = self.residual_block3(video_res2feature) #(, 256, 8, 16)
-        video_res4feature = self.residual_block4(video_res3feature) #(, 512, 4, 8)
+        with torch.no_grad():
+            video_res1feature = self.residual_block1(visual_frame) #(, 64, 32, 64)
+            video_res2feature = self.residual_block2(video_res1feature) #(, 128, 16, 32)
+            video_res3feature = self.residual_block3(video_res2feature) #(, 256, 8, 16)
+            video_res4feature = self.residual_block4(video_res3feature) #(, 512, 4, 8)
+            
         #Conv
         video_res5feature = self.visual_conv(video_res4feature)
         video_res5feature = video_res5feature.transpose(2,3)
