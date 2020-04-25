@@ -12,27 +12,14 @@ import time
 
 def create_optimizer(model, opt):
 
-    param_group = [ #{'params':model.u_net.residual_block1.parameters(), 'lr': opt.lr_visual},
-                    #{'params':model.u_net.residual_block2.parameters(), 'lr': opt.lr_visual},
-                    #{'params':model.u_net.residual_block3.parameters(), 'lr': opt.lr_visual},
-                    #{'params':model.u_net.residual_block4.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.u_net.audionet_convlayer1.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_convlayer2.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_convlayer3.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_convlayer4.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_convlayer5.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_upconvlayer1.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.audionet_upconvlayer2.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.audionet_upconvlayer3.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.audionet_upconvlayer4.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.audionet_upconvlayer5.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.visual_conv.parameters(), 'lr': opt.lr_gen}
-                    ]
+    (net_visual, net_audio) = nets
+    param_groups = [{'params': model.u_net.parameters(), 'lr': opt.lr_visual},
+                    {'params': model.visual_extract.parameters(), 'lr': opt.lr_audio}]
 
     if opt.optimizer == 'sgd':
-        return torch.optim.SGD(param_group, momentum=opt.beta1, weight_decay=opt.weight_decay)
+        return torch.optim.SGD(param_groups, momentum=opt.beta1, weight_decay=opt.weight_decay)
     elif opt.optimizer == 'adam':
-        return torch.optim.Adam(param_group, betas=(opt.beta1,0.999), weight_decay=opt.weight_decay)
+        return torch.optim.Adam(param_groups, betas=(opt.beta1,0.999), weight_decay=opt.weight_decay)
 
 # Used to display validation loss
 def display_val(model, loss_criterion, writer, index, dataset_val, opt):
@@ -50,7 +37,6 @@ def display_val(model, loss_criterion, writer, index, dataset_val, opt):
         writer.add_scalar('data/val_loss', avg_loss, index)
     print('val loss: %.3f' % avg_loss)
     return avg_loss 
-
 
 
 def main():
