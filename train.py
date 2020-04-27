@@ -60,7 +60,7 @@ def main():
         dataset_val = CustomDataset(opt)
         dataloader_val = DataLoader(
             dataset_val,
-            batch_size=opt.batch_size, 
+            batch_size=opt.validation_batches, 
             shuffle=True, 
             num_workers=int(opt.nThreads)
         )
