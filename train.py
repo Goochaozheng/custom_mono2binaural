@@ -37,16 +37,6 @@ def display_val(model, loss_criterion, writer, index, dataset_val, opt):
     print('val loss: %.3f' % avg_loss)
     return avg_loss 
 
-def create_dataloader(opt):
-    dataset = CustomDataset(opt)
-    dataloader = DataLoader(
-        dataset, 
-        batch_size=opt.batch_size, 
-        shuffle=True, 
-        num_workers=int(opt.nThreads)
-    )
-    print('#clips = %d' % len(dataset))
-    return dataloader
 
 def main():
 
@@ -54,13 +44,28 @@ def main():
     device = torch.device("cuda:0")
 
     # Construct dataset and dataloader
-    dataloader = create_dataloader(opt)
+    dataset = CustomDataset(opt)
+    dataloader = DataLoader(
+        dataset, 
+        batch_size=opt.batch_size, 
+        shuffle=True, 
+        num_workers=int(opt.nThreads)
+    )
+    print('#training clips = %d' % len(dataset))
 
     #create validation set data loader if validation_on option is set
     if opt.validation_on:
         #temperally set to val to load val data
         opt.mode = 'val'
-        dataloader_val = create_dataloader(opt)
+        dataset_val = CustomDataset(opt)
+        dataloader_val = DataLoader(
+            dataset_val,
+            batch_size=opt.batch_size, 
+            shuffle=True, 
+            num_workers=int(opt.nThreads)
+        )
+        dataset_size_val = len(dataset_val)
+        print('#validation clips = %d' % dataset_size_val)
         opt.mode = 'train' #set it back
 
     # Tensorboard
