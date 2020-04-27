@@ -7,13 +7,15 @@ from tqdm import tqdm
 import torch
 import torchvision
 import h5py
+from PIL import Image
 
 AUDIO_DIR = "H:\\FAIR-Play\\FAIR-Play\\binaural_audios"
 VIDEO_DIR = "H:\\FAIR-Play\\FAIR-Play\\videos"
+FRAME_DIR = "H:\\FAIR-Play\\FAIR-Play\\frames"
 
 SEGMENT_LENGTH = 0.63
-DATASET_SIZE = 5000
-OUTPUT_DIR = 'data\\split-6\\'
+DATASET_SIZE = 10
+OUTPUT_DIR = 'data\\split-7\\'
 
 def generate_spectrogram(audio):
     spectro = librosa.core.stft(audio, n_fft=512, hop_length=160, win_length=400, center=True)
@@ -30,14 +32,13 @@ def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
 
 
 def frame_tranform(frame):
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame = cv2.resize(frame, (256,128))
+    frame = frame.resize((256,128))
     # normalize = torchvision.transforms.Normalize(
     #     mean=[0.485, 0.456, 0.406],
     #     std=[0.229, 0.224, 0.225]
     # )
     # vision_transform_list = torchvision.transforms.Compose([torchvision.transforms.ToTensor(), normalize])
-    frame = torchvision.transforms.ToTensor()(frame).numpy()
+    frame = torchvision.transforms.ToTensor()(frame)
     return frame
 
 
@@ -62,7 +63,7 @@ def main():
     audio_mix_spec_list = np.empty(shape=(0,2,257,64))
     audio_diff_spec_list = np.empty(shape=(0,2,257,64))
     # visual_feature_list = np.empty(shape=(0,512,4,8))
-    frame_list = np.empty(shape=(0,3,128,256))
+    frame_list = np.empty(shape=(0,3,6,128,256))
 
     # Load pre-trained resnet18
     # resnet = torchvision.models.resnet18(pretrained=True)
@@ -113,26 +114,27 @@ def main():
         #clear audio var
         del audio
 
-        #############################################
-        # Load video    
-        #############################################
-        video_file = audio_file[:-4] + '.mp4'
-        video_path = os.path.join(VIDEO_DIR, video_file)
-        video = cv2.VideoCapture(video_path)
-        fps = video.get(cv2.CAP_PROP_FPS)
 
-        # Capture center frame
-        center_frame_pos = int(round(((start_time + end_time) / 2) * fps))
-        video.set(cv2.CAP_PROP_POS_FRAMES, center_frame_pos)
-        flag, frame = video.read()
-        if not flag:
-            print("frame fail: %d" % center_frame_pos)
-            print("total frame: %d" % video.get(cv2.CAP_PROP_FRAME_COUNT))
-            print("seg: %f - %f" % (start_time, end_time))
-            exit()
+        #############################################
+        # Load frames 
+        #############################################
 
-        #frame process
+        frame_dir = os.path.join(FRAME_DIR, audio_file[:-4])
+
+        # Extract 6 frames for every slice
+        frame_start_pos = start_time * 10
+        current_pos = frame_start_pos
+        frame = Image.open(os.path.join(frame_dir, "%06d.png"%current_pos))
         frame = frame_tranform(frame)
+        frame_sequence = frame.unsqueeze(0)
+
+        for frame_index in range(5):
+            current_pos = current_pos + 1
+            frame = Image.open(os.path.join(frame_dir, "%06d.png"%current_pos))
+            frame = frame_tranform(frame).unsqueeze(0)
+            frame_sequence = torch.cat((frame_sequence, frame), dim=0)
+
+        frame_sequence = torch.transpose(frame_sequence, 0, 1).numpy()
 
         # extract visual feature
         # with torch.no_grad():
@@ -141,15 +143,14 @@ def main():
         # visual_feature = visual_feature.cpu().numpy()
         # visual_feature_list = np.concatenate([visual_feature_list, visual_feature])
 
-        frame_list = np.concatenate([frame_list, [frame]])
+        frame_list = np.concatenate([frame_list, [frame_sequence]])
 
         # write to hdf5
         if (i+1)%100 == 0 or i == DATASET_SIZE-1:
             #write visual feature
             write_hdf5('frame.h5', frame_list)
-            frame_list = np.empty(shape=(0,3,128,256))
-      
-        del video      
+            frame_list = np.empty(shape=(0,3,6,128,256))
+         
 
 if __name__ == '__main__':
     main()
