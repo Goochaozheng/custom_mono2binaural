@@ -34,7 +34,7 @@ class CustomDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.data_source['audio'])
 
-    def __getitem__(self, idx):
+    def __getitem__(self, index):
 
         audio, audio_rate = librosa.load(self.data_source['audio'][index].decode(), sr=self.opt.audio_sampling_rate, mono=False)
 
