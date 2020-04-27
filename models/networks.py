@@ -103,6 +103,27 @@ class AudioNet(nn.Module):
         # self.visual_pooling = nn.AdaptiveAvgPool2d((8,2))
         self.visual_conv = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=(2,1), stride=(2,1), padding=0)
 
+    def get_audio_layers():
+        return [
+            self.audionet_convlayer1,
+            self.audionet_convlayer2,
+            self.audionet_convlayer3,
+            self.audionet_convlayer4,
+            self.audionet_convlayer5,
+            self.audionet_upconvlayer1,
+            self.audionet_upconvlayer2,
+            self.audionet_upconvlayer3,
+            self.audionet_upconvlayer4,
+            self.audionet_upconvlayer5,
+        ]
+
+    def get_visual_layers():
+        return [
+            self.residual_block1,
+            self.residual_block2,
+            self.residual_block3,
+            self.residual_block4,
+        ]
 
     def forward(self, audio_spec, visual_frame):
         #audio spec (, 2, 257, 64)

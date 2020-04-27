@@ -12,22 +12,8 @@ import time
 
 def create_optimizer(model, opt):
 
-    param_group = [ #{'params':model.u_net.residual_block1.parameters(), 'lr': opt.lr_visual},
-                    #{'params':model.u_net.residual_block2.parameters(), 'lr': opt.lr_visual},
-                    #{'params':model.u_net.residual_block3.parameters(), 'lr': opt.lr_visual},
-                    #{'params':model.u_net.residual_block4.parameters(), 'lr': opt.lr_visual},
-                    {'params':model.u_net.audionet_convlayer1.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_convlayer2.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_convlayer3.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_convlayer4.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_convlayer5.parameters(), 'lr': opt.lr_audio},
-                    {'params':model.u_net.audionet_upconvlayer1.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.audionet_upconvlayer2.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.audionet_upconvlayer3.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.audionet_upconvlayer4.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.audionet_upconvlayer5.parameters(), 'lr': opt.lr_gen},
-                    {'params':model.u_net.visual_conv.parameters(), 'lr': opt.lr_gen}
-                    ]
+    param_group = [ {'params':model.u_net.get_audio_layers().parameters(), 'lr': opt.lr_gen}
+                    {'params':model.u_net.visual_conv.parameters(), 'lr': opt.lr_gen} ]
 
     if opt.optimizer == 'sgd':
         return torch.optim.SGD(param_group, momentum=opt.beta1, weight_decay=opt.weight_decay)
