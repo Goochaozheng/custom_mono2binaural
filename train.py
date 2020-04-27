@@ -5,6 +5,7 @@ from models.audioVisual_model import AudioVisualModel
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from options.train_options import TrainOptions
+from torch.autograd import Variable
 import torchvision
 import torch
 import os
