@@ -16,18 +16,18 @@ import torchvision
 
 def unet_conv(input_nc, output_nc, norm_layer=nn.BatchNorm2d):
     downconv = nn.Conv2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
-    dropout = nn.Dropout2d(p=0.5)
+    # dropout = nn.Dropout2d(p=0.5)
     downrelu = nn.LeakyReLU(0.2, True)
     downnorm = norm_layer(output_nc)
-    return nn.Sequential(*[downconv, downnorm, dropout, downrelu])
+    return nn.Sequential(*[downconv, downnorm, downrelu])
 
 def unet_upconv(input_nc, output_nc, outermost=False, norm_layer=nn.BatchNorm2d):
     upconv = nn.ConvTranspose2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
-    dropout = nn.Dropout2d(p=0.5)
+    # dropout = nn.Dropout2d(p=0.5)
     uprelu = nn.ReLU(inplace=True)
     upnorm = norm_layer(output_nc)
     if not outermost:
-        return nn.Sequential(*[upconv, upnorm, dropout, uprelu])
+        return nn.Sequential(*[upconv, upnorm, uprelu])
     else:
         return nn.Sequential(*[upconv, nn.Sigmoid()])
         
@@ -117,7 +117,7 @@ class AudioNet(nn.Module):
             self.audionet_upconvlayer5,
         ]
 
-    def get_visual_layers():
+    def get_visual_layers(self):
         return [
             self.residual_block1,
             self.residual_block2,

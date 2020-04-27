@@ -36,12 +36,9 @@ class AudioVisualModel(torch.nn.Module):
         # self.visual_extract = networks.VisualNet()
 
     def forward(self, input, volatile=False):
-        # visual_feature = input['visual_feature'].cuda()
         frame = input['frame'].cuda()
         audio_mix = input['audio_mix'].cuda()
-        # audio_diff = input['audio_diff'].cuda()
 
-        # visual_feature = self.visual_extract(frame) # Resnet-18
         mask_prediction = self.u_net(audio_mix, frame) # U-Net
 
         # complex masking to obtain the predicted spectrogram by complex multiplying (a+bi)(b+ci) = (ac-bd)+(bc+ad)i
