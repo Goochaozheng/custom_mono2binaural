@@ -26,8 +26,11 @@ class CustomDataset(torch.utils.data.Dataset):
 
         # visual_feature = torch.FloatTensor(self.data_source['visual_feature'][idx]).cuda()
         frame = transforms.ToTensor()(self.data_source['frame'][idx]).float()
+        frame.requires_grad = False
         audio_mix = torch.FloatTensor(self.data_source['audio_mix'][idx])
+        audio_mix.requires_grad = False
         aduio_diff = torch.FloatTensor(self.data_source['audio_diff'][idx])
+        aduio_diff.requires_grad = False
 
         data = {
             # 'visual_feature': visual_feature,
