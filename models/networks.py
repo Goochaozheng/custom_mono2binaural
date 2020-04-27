@@ -103,7 +103,7 @@ class AudioNet(nn.Module):
         # self.visual_pooling = nn.AdaptiveAvgPool2d((8,2))
         self.visual_conv = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=(2,1), stride=(2,1), padding=0)
 
-    def get_audio_layers():
+    def get_audio_layers(self):
         return [
             self.audionet_convlayer1,
             self.audionet_convlayer2,
