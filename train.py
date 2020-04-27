@@ -52,6 +52,7 @@ def main():
         shuffle=True, 
         num_workers=int(opt.nThreads)
     )
+    print('#training clips = %d' % len(dataset))
 
     #create validation set data loader if validation_on option is set
     if opt.validation_on:
@@ -64,7 +65,7 @@ def main():
             shuffle=True, 
             num_workers=int(opt.nThreads)
         )
-        dataset_size_val = len(dataloader_val)
+        dataset_size_val = len(dataset_val)
         print('#validation clips = %d' % dataset_size_val)
         opt.mode = 'train' #set it back
 
