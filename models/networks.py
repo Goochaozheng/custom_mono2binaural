@@ -14,6 +14,17 @@ import torch.nn.functional as F
 import functools
 import torchvision
 
+
+def visual_conv3d(input_nc, output_nc, kernel_size=4, stride=2, padding=1):
+    conv = nn.Conv3d(input_nc, output_nc, kernel_size, stride, padding)
+    relu = nn.LeakyReLU(0.2, True)
+    return nn.Sequential(*[conv, relu])
+
+# def visual_conv2d(input_nc, output_nc):
+#     conv = nn.Conv2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
+#     relu = nn.LeakyReLU(0.2, True)
+#     return nn.Sequential(*[conv, relu])
+
 def unet_conv(input_nc, output_nc, norm_layer=nn.BatchNorm2d):
     downconv = nn.Conv2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
     # dropout = nn.Dropout2d(p=0.5)
@@ -50,17 +61,27 @@ def weights_init(m):
     elif classname.find('Linear') != -1:
         m.weight.data.normal_(0.0, 0.02)
 
-# ResNet-18
+# 3d conv
 class VisualNet(nn.Module):
     def __init__(self):
         super(VisualNet, self).__init__()
-        original_resnet = torchvision.models.resnet18(pretrained=True)
-        layers = list(original_resnet.children())[0:-2]
-        self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
+        self.visual_conv1 = visual_conv3d(3, 8, kernel_size=(2,4,4))
+        self.visual_conv2 = visual_conv3d(8, 16)
+        self.visual_conv3 = visual_conv3d(16, 32, kernel_size=(2,4,4), padding=(0,1,1))
+        self.visual_conv4 = unet_conv(32,64)
+        self.visual_conv5 = unet_conv(64,64)
+        self.visual_conv6 = unet_conv(64,64)
 
     def forward(self, x):
-        x = self.feature_extraction(x)
-        return x
+        out = self.visual_conv1(x)
+        out = self.visual_conv2(out)
+        out = self.visual_conv3(out)
+        out = out.squeeze(2)
+        out = self.visual_conv4(out)
+        out = self.visual_conv5(out)
+        out = self.visual_conv6(out)
+        
+        return out
 
 # U-Net
 class AudioNet(nn.Module):
@@ -87,7 +108,6 @@ class AudioNet(nn.Module):
         audio_conv4feature = self.audionet_convlayer4(audio_conv3feature)
         audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)
 
-        visual_feat = self.conv1x1(visual_feat)
         visual_feat = visual_feat.view(visual_feat.shape[0], -1, 1, 1) #flatten visual feature
         visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
         
