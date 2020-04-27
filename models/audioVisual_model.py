@@ -30,7 +30,7 @@ class AudioVisualModel(torch.nn.Module):
             input_nc=opt.unet_input_nc,
             output_nc=opt.unet_output_nc
         )
-        u_net.apply(networks.weights_init)
+        self.u_net.apply(networks.weights_init)
         self.visual_extract = networks.VisualNet()
 
     def forward(self, input, volatile=False):
