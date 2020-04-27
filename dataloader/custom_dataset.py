@@ -54,7 +54,7 @@ class CustomDataset(torch.utils.data.Dataset):
         audio_mix_spec = torch.FloatTensor(generate_spectrogram(audio_channel1 + audio_channel2))
 
         #get the frame dir path based on audio path
-        path_parts = self.audios[index].decode().strip().split('\\')
+        path_parts = self.data_source['audio'][index].decode().strip().split('\\')
         path_parts[-1] = path_parts[-1][:-4]
         path_parts[-2] = 'frames'
         frame_path = '/'.join(path_parts)
