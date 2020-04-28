@@ -32,13 +32,17 @@ class CustomDataset(torch.utils.data.Dataset):
         elif opt.mode == 'test':
             path = os.path.join(opt.data_dir, 'test.h5')            
         self.data_source = h5py.File(path)
+        self.audio_source = h5py.File(audio_source)
 
     def __len__(self):
         return len(self.data_source['audio'])
 
     def __getitem__(self, index):
 
-        audio, audio_rate = librosa.load(self.data_source['audio'][index].decode(), sr=self.opt.audio_sampling_rate, mono=False)
+        path_parts = self.data_source['audio'][index].decode().strip().split('\\')
+        audio_index = int(path_parts[-1][:-4]) - 1
+        audio = self.audio_source['audio'][audio_index]
+        # audio, audio_rate = librosa.load(self.data_source['audio'][index].decode(), sr=self.opt.audio_sampling_rate, mono=False)
 
         #randomly get a start time for the audio segment from the 10s clip
         audio_start_time = random.uniform(0, 9 - self.opt.audio_length)
@@ -55,7 +59,6 @@ class CustomDataset(torch.utils.data.Dataset):
         audio_mix_spec = torch.FloatTensor(generate_spectrogram(audio_channel1 + audio_channel2))
 
         #get the frame dir path based on audio path
-        path_parts = self.data_source['audio'][index].decode().strip().split('\\')
         path_parts[-1] = path_parts[-1][:-4]
         path_parts[-2] = 'frames'
         frame_path = '/'.join(path_parts)
