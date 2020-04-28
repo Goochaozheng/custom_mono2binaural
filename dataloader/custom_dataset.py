@@ -51,12 +51,8 @@ class CustomDataset(torch.utils.data.Dataset):
         audio_end = audio_start + int(self.opt.audio_length * self.opt.audio_sampling_rate)
         audio = audio[:, audio_start:audio_end]
         audio = normalize(audio)
-        audio_channel1 = audio[0,:]
-        audio_channel2 = audio[1,:]
-
-        #passing the spectrogram of the difference
-        audio_diff_spec = torch.FloatTensor(generate_spectrogram(audio_channel1 - audio_channel2))
-        audio_mix_spec = torch.FloatTensor(generate_spectrogram(audio_channel1 + audio_channel2))
+        audio_mix = torch.FloatTensor(audio[0,:] + audio[1,:])
+        audio_diff = torch.FloatTensor(audio[0,:] - audio[1,:])
 
         #get the frame dir path based on audio path
         path_parts[-1] = path_parts[-1][:-4]
@@ -71,8 +67,8 @@ class CustomDataset(torch.utils.data.Dataset):
         data = {
             # 'visual_feature': visual_feature,
             'frame': frame,
-            'audio_mix': audio_mix_spec,
-            'audio_diff': audio_diff_spec
+            'audio_mix': audio_mix,
+            'audio_diff': audio_diff
         }
         return data
 
