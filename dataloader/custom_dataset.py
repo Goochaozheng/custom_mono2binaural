@@ -32,7 +32,7 @@ class CustomDataset(torch.utils.data.Dataset):
         elif opt.mode == 'test':
             path = os.path.join(opt.data_dir, 'test.h5')            
         self.data_source = h5py.File(path)
-        self.audio_source = h5py.File(audio_source)
+        self.audio_source = h5py.File(opt.audio_source)
 
     def __len__(self):
         return len(self.data_source['audio'])
