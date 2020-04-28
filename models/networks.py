@@ -137,24 +137,14 @@ class AudioNet(nn.Module):
         audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)# (, 512, 8, 2)
 
         # Video encode
-        with torch.no_grad():
-            video_res1feature = self.residual_block1(visual_frame) #(, 64, 32, 64)
-            video_res2feature = self.residual_block2(video_res1feature) #(, 128, 16, 32)
-            video_res3feature = self.residual_block3(video_res2feature) #(, 256, 8, 16)
-            video_res4feature = self.residual_block4(video_res3feature) #(, 512, 4, 8)
+        video_res1feature = self.residual_block1(visual_frame) #(, 64, 32, 64)
+        video_res2feature = self.residual_block2(video_res1feature) #(, 128, 16, 32)
+        video_res3feature = self.residual_block3(video_res2feature) #(, 256, 8, 16)
+        video_res4feature = self.residual_block4(video_res3feature) #(, 512, 4, 8)
             
         #Conv
         video_res5feature = self.visual_conv(video_res4feature)
         video_res5feature = video_res5feature.transpose(2,3)
-
-        #flatten & repeat
-        # visual_feat = self.conv1x1(visual_feat)
-        # visual_feat = visual_feat.view(visual_feat.shape[0], -1, 1, 1) #flatten visual feature
-        # visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
-        
-        #pooling & preserve channels
-        # visual_feat = self.visual_pooling(visual_feat)# (, 512, 8, 2)
-
         audioVisual_feature = torch.cat((video_res5feature, audio_conv5feature), dim=1)
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
 
