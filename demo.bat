@@ -1,1 +1,1 @@
-python demo.py --input_audio_path demo/data/000003.wav --input_video_path demo/data/000003.mp4 --model_path checkpoints/dropout_split4/model_best.pth --output_dir_root demo/output/dropout_split4 --input_audio_length 10 --hop_size 0.05
+python demo.py --input_audio_path demo/data/000036.wav --input_video_path demo/data/000036.mp4 --model_path trained_model/parallel_resnet_include.pth --output_dir_root demo/output/parallel_resnet_include/000036 --input_audio_length 10 --hop_size 0.05

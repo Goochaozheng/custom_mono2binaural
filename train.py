@@ -13,8 +13,8 @@ import time
 def create_optimizer(model, opt):
 
     unet_param_group = [{'params': l.parameters(), 'lr': opt.lr_audio} for l in model.u_net.get_audio_layers()]
-    visual_param_group = [{'params': l.parameters(), 'lr': opt.lr_visual} for l in model.u_net.get_visual_layers()]
-    param_group = unet_param_group + visual_param_group
+    # visual_param_group = [{'params': l.parameters(), 'lr': opt.lr_visual} for l in model.u_net.get_visual_layers()]
+    param_group = unet_param_group
     param_group.append({'params':model.u_net.visual_conv.parameters(), 'lr': opt.lr_audio})
 
     if opt.optimizer == 'sgd':
@@ -182,7 +182,6 @@ def main():
         if(epoch % opt.save_epoch_freq == 0):
             print('saving the model at the end of epoch %d, total_steps %d' % (epoch, total_steps))
             torch.save(model, os.path.join('.', opt.checkpoints_dir, opt.name, str(epoch) + '_model.pth'))            
-
 
         #decrease learning rate 6% every opt.learning_rate_decrease_itr epochs
         if(opt.learning_rate_decrease_itr > 0 and epoch%opt.learning_rate_decrease_itr == 0):

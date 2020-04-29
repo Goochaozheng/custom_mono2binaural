@@ -68,8 +68,8 @@ def main():
 	fps = video.get(cv2.CAP_PROP_FPS)
 
 	#define the transformation to perform on visual frames
-	vision_transform_list = [transforms.Resize((224,448)), transforms.ToTensor()]
-	vision_transform_list.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+	vision_transform_list = [transforms.Resize((128,256)), transforms.ToTensor()]
+	# vision_transform_list.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
 	vision_transform = transforms.Compose(vision_transform_list)
 
 	#perform spatialization over the whole audio using a sliding window approach
@@ -109,9 +109,9 @@ def main():
 
 		with torch.no_grad():
 			frame = frame.to(device)
-			visual_feature = visual_extraction(frame)
-			data['visual_feature'] = visual_feature
-
+			# visual_feature = visual_extraction(frame)
+			# data['visual_feature'] = visual_feature
+			data['frame'] = frame
 			output = model.forward(data)
 			predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
@@ -158,9 +158,9 @@ def main():
 
 	with torch.no_grad():
 		frame = frame.to(device)
-		visual_feature = visual_extraction(frame)
-		data['visual_feature'] = visual_feature
-
+		# visual_feature = visual_extraction(frame)
+		# data['visual_feature'] = visual_feature
+		data['frame'] = frame
 		output = model.forward(data)
 		predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
@@ -185,9 +185,10 @@ def main():
 	print('Loss:%f' % (total_loss/count))
 
 	mixed_mono = (audio_channel1 + audio_channel2) / 2
-	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'predicted_binaural.wav'), predicted_binaural_audio, sr=opt.audio_sampling_rate)
+
 	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'mixed_mono.wav'), mixed_mono, sr=opt.audio_sampling_rate)
 	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'input_binaural.wav'), audio, sr=opt.audio_sampling_rate)
+	librosa.output.write_wav(os.path.join(opt.output_dir_root, opt.comment, 'predicted_binaural.wav'), predicted_binaural_audio, sr=opt.audio_sampling_rate)
 
 if __name__ == '__main__':
     main()
