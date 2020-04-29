@@ -19,7 +19,7 @@ def unet_conv(input_nc, output_nc, norm_layer=nn.BatchNorm2d):
     dropout = nn.Dropout2d(p=0.5)
     downrelu = nn.LeakyReLU(0.2, True)
     downnorm = norm_layer(output_nc)
-    return nn.Sequential(*[downconv, dropout, downnorm, downrelu])
+    return nn.Sequential(*[downconv, downnorm, dropout, downrelu])
 
 def unet_upconv(input_nc, output_nc, outermost=False, norm_layer=nn.BatchNorm2d):
     upconv = nn.ConvTranspose2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
@@ -27,7 +27,7 @@ def unet_upconv(input_nc, output_nc, outermost=False, norm_layer=nn.BatchNorm2d)
     uprelu = nn.ReLU(inplace=True)
     upnorm = norm_layer(output_nc)
     if not outermost:
-        return nn.Sequential(*[upconv, dropout, upnorm, uprelu])
+        return nn.Sequential(*[upconv, upnorm, dropout, uprelu])
     else:
         return nn.Sequential(*[upconv, nn.Sigmoid()])
         
