@@ -75,8 +75,12 @@ def main():
         writer = SummaryWriter(comment=opt.name)
     
     # Build network
-    model = AudioVisualModel(opt)
+    if len(opt.model_weights) > 0:
+        model = torch.load(opt.model_weights)
+    else:
+        model = AudioVisualModel(opt)
     model.to(device)
+    model.train()
 
     if opt.tensorboard:
         writer.add_graph(model, next(iter(dataloader)))

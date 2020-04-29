@@ -25,8 +25,7 @@ class TrainOptions(BaseOptions):
 		self.parser.add_argument('--enable_data_augmentation', type=bool, default=True, help='whether to augment input frame')
 
 		#model arguments
-		self.parser.add_argument('--weights_visual', type=str, default='', help="weights for visual stream")
-		self.parser.add_argument('--weights_audio', type=str, default='', help="weights for audio stream")
+		self.parser.add_argument('--model_weights', type=str, default='', help="weights for model")
 		self.parser.add_argument('--unet_ngf', type=int, default=64, help="unet base channel dimension")
 		self.parser.add_argument('--unet_input_nc', type=int, default=2, help="input spectrogram number of channels")
 		self.parser.add_argument('--unet_output_nc', type=int, default=2, help="output spectrogram number of channels")
