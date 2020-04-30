@@ -51,7 +51,7 @@ def weights_init(m):
 
 class AttentionNet(nn.Module):
     def __init__(self):
-        super(VisualNet, self).__init__()
+        super(AttentionNet, self).__init__()
         original_resnet = torchvision.models.resnet18(pretrained=True)
         layers = list(original_resnet.children())[0:-2]
         self.feature_extraction = nn.Sequential(*layers) #(512,4,8)
@@ -145,7 +145,7 @@ class AudioNet(nn.Module):
 
 class GenerationNet(nn.Module):
     def __init__(self):
-        super(AudioGeneration, self).__init__()
+        super(GenerationNet, self).__init__()
 
         self.audio_upconv1 = upconv(1024, 512)
         self.audio_upconv2 = upconv(512, 256)
