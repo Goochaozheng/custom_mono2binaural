@@ -18,7 +18,7 @@ class LossWithL2(nn.Module):
 
     def forward(self, output, target, weights):
         mse_loss = torch.nn.MSELoss()(output, target)
-        l2_norm = alpha * torch.abs(weights).sum()
+        l2_norm = self.alpha * torch.abs(weights).sum()
         return mse_loss + l2_norm
 
 class BaseLoss(nn.Module):
