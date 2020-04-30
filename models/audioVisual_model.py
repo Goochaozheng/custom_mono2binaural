@@ -35,9 +35,7 @@ class AudioVisualModel(torch.nn.Module):
         audio_mix = input['audio_mix'].cuda()
 
         attention_mask = self.attention_net(frame)
-        attention_mask = attention_mask.detach()
-        with torch.no_grad():
-            frame = attention_mask * frame
+        frame = attention_mask * frame
 
         visual_feature = self.visual_extraction(frame)
         audio_feature = self.audio_extraction(audio_mix)
