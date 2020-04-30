@@ -70,8 +70,9 @@ class AttentionNet(nn.Module):
 
 
     def forward(self, frame):
-
-        frame = self.feature_extraction(frame)
+        with torch.no_grad():
+            frame = self.feature_extraction(frame)
+            
         attention_mask = self.mask_upsample1(frame)
         attention_mask = self.mask_upsample2(attention_mask)
         attention_mask = self.mask_upsample3(attention_mask)
