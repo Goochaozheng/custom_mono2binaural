@@ -60,15 +60,14 @@ class AttentionNet(nn.Module):
         self.mask_upsample2 = upsample()
         self.mask_upsample3 = upconv(128, 32)
         self.mask_upsample4 = upsample()
-        self.mask_upsample5 = upconv(32, 4)
-        self.mask_upsample6 = upconv(4, 1, outermost=True)
+        self.mask_upsample5 = upconv(32, 1, outermost=True)
         #weight init
         self.mask_upsample1.apply(weights_init)
         self.mask_upsample2.apply(weights_init)
         self.mask_upsample3.apply(weights_init)
         self.mask_upsample4.apply(weights_init)
         self.mask_upsample5.apply(weights_init)
-        self.mask_upsample6.apply(weights_init)
+
 
     def forward(self, frame):
 
@@ -78,7 +77,6 @@ class AttentionNet(nn.Module):
         attention_mask = self.mask_upsample3(attention_mask)
         attention_mask = self.mask_upsample4(attention_mask)
         attention_mask = self.mask_upsample5(attention_mask)
-        attention_mask = self.mask_upsample6(attention_mask)
         #output mask (, 1, 128, 256)
         return attention_mask
 
