@@ -119,11 +119,11 @@ class AudioNet(nn.Module):
     def __init__(self):
         super(AudioNet, self).__init__()
         #audio encode layer
-        self.audio_conv1 = unet_conv(2, 32) 
-        self.audio_conv2 = unet_conv(32, 64)
-        self.audio_conv3 = unet_conv(64, 128)
-        self.audio_conv4 = unet_conv(128, 256)
-        self.audio_conv5 = unet_conv(256, 512)
+        self.audio_conv1 = conv(2, 32) 
+        self.audio_conv2 = conv(32, 64)
+        self.audio_conv3 = conv(64, 128)
+        self.audio_conv4 = conv(128, 256)
+        self.audio_conv5 = conv(256, 512)
         #weight init
         self.audio_conv1.apply(weights_init)
         self.audio_conv2.apply(weights_init)
