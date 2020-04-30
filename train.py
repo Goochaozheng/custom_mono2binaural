@@ -5,6 +5,7 @@ from models.audioVisual_model import AudioVisualModel
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from options.train_options import TrainOptions
+from models.criterion import LossWithL2
 import torchvision
 import torch
 import os
@@ -13,7 +14,6 @@ import time
 def create_optimizer(model, opt):
 
     param_group = [{'params': model.parameters(), 'lr': opt.lr_audio}]
-
 
     if opt.optimizer == 'sgd':
         return torch.optim.SGD(param_group, momentum=opt.beta1, weight_decay=opt.weight_decay)
@@ -87,7 +87,7 @@ def main():
     optimizer = create_optimizer(model, opt)
 
     # Set up loss function
-    loss_criterion = torch.nn.MSELoss()
+    loss_criterion = LossWithL2()
     loss_criterion.cuda(device)
 
     # Initialization
@@ -118,7 +118,7 @@ def main():
             output = model.forward(data)
 
             # Compute loss
-            loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:].cuda())
+            loss = loss_criterion(output["binaural_spec"], data['audio_diff'][:,:,:-1,:].cuda(), output["attention_mask"])
             batch_loss.append(loss.item())  
 
             if(opt.measure_time):
@@ -163,7 +163,7 @@ def main():
                 model.eval()
                 opt.mode = 'val'
                 print('Display validation results at (epoch %d, total_steps %d)' % (epoch, total_steps))
-                val_err = display_val(model, loss_criterion, writer, total_steps, dataloader_val, opt)
+                val_err = display_val(model, torch.nn.MSELoss(), writer, total_steps, dataloader_val, opt)
                 print('end of display \n')
                 model.train()
                 opt.mode = 'train'

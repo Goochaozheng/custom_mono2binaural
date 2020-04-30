@@ -51,4 +51,7 @@ class AudioVisualModel(torch.nn.Module):
         
         binaural_spectrogram = torch.cat((spectrogram_diff_real.unsqueeze(1), spectrogram_diff_img.unsqueeze(1)), 1)
 
-        return binaural_spectrogram
+        return {
+            "attention_mask": attention_mask,
+            "binaural_spec": binaural_spectrogram
+        }

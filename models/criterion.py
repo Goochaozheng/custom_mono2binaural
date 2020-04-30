@@ -11,6 +11,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class LossWithL2(nn.Module):
+    def __init__(self, alpha=0.5):
+        super(L2Norm, self).__init__()
+        self.alpha = alpha
+
+    def forward(self, output, target, weights):
+        mse_loss = torch.nn.MSELoss()(output, target)
+        l2_norm = alpha * torch.abs(weights).sum()
+        return mse_loss + l2_norm
+
 class BaseLoss(nn.Module):
     def __init__(self):
         super(BaseLoss, self).__init__()
