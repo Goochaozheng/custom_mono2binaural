@@ -80,8 +80,8 @@ def main():
     model.to(device)
     model.train()
 
-    if opt.tensorboard:
-        writer.add_graph(model, next(iter(dataloader)))
+    # if opt.tensorboard:
+    #     writer.add_graph(model, next(iter(dataloader)))
 
     # Create optimizer
     optimizer = create_optimizer(model, opt)
