@@ -65,7 +65,7 @@ class CustomDataset(torch.utils.data.Dataset):
 
         frame_index = int(round(((audio_start_time + audio_end_time) / 2.0 + 0.05) * 10))  #10 frames extracted per second
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-        frame = frame.resize((256,128))
+        frame = frame.resize((448,224))
         frame = transforms.ToTensor()(frame)
 
         data = {
