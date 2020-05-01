@@ -12,7 +12,7 @@ import time
 
 def create_optimizer(model, opt):
 
-    unet_param = [{'params': model.u_net.parameters(), 'lr': opt.lr_audio},
+    param_group = [{'params': model.u_net.parameters(), 'lr': opt.lr_audio},
                   {'params': model.visual_extract.parameters(), 'lr': opt.lr_visual}]
 
     if opt.optimizer == 'sgd':
