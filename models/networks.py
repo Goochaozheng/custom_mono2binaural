@@ -31,8 +31,8 @@ def unet_upconv(input_nc, output_nc, outermost=False, norm_layer=nn.BatchNorm2d)
     else:
         return nn.Sequential(*[upconv, nn.Sigmoid()])
         
-def create_conv(input_channels, output_channels, kernel, padding, batch_norm=True, Relu=True, stride=1):
-    model = [nn.Conv2d(input_channels, output_channels, kernel, stride = stride, padding = padding)]
+def create_conv(input_channels, output_channels, kernel, paddings, batch_norm=True, Relu=True, stride=1):
+    model = [nn.Conv2d(input_channels, output_channels, kernel, stride = stride, padding = paddings)]
     if(batch_norm):
         model.append(nn.BatchNorm2d(output_channels))
     if(Relu):
@@ -82,7 +82,7 @@ class AudioNet(nn.Module):
     def __init__(self, ngf=64, input_nc=2, output_nc=2):
         super(AudioNet, self).__init__()
 
-        self.visual_conv = create_conv(512, 512, kernel=2, stride=2, padding=0)
+        self.visual_conv = create_conv(512, 512, kernel=2, stride=2, paddings=0)
         self.visual_fusion = create_conv(1024, 512, kernel=1, stride=1, paddings=0)
 
         #initialize layers
