@@ -139,8 +139,14 @@ def main():
         
         frame_index = int(((((sliding_window_start + samples_per_window) / 2.0) / audio.shape[-1]) * opt.input_audio_length) * 10)
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-        frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
 
+        #check output directory
+        if not os.path.isdir(os.path.join(opt.output_dir_root, audio_name)):
+            os.mkdir(os.path.join(opt.output_dir_root, audio_name))
+        #save sample image
+        frame.save(os.path.join(opt.output_dir_root, audio_name, 'sample_image.png'))
+        frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
+        
         with torch.no_grad():
             frame = frame.to(device)
             # visual_feature = visual_extraction(frame)
@@ -162,11 +168,6 @@ def main():
 
         #divide aggregated predicted audio by their corresponding counts
         predicted_binaural_audio = np.divide(binaural_audio, overlap_count)
-        predicted_binaural_audio = np.array(predicted_binaural_audio)
-
-        #check output directory
-        if not os.path.isdir(os.path.join(opt.output_dir_root, audio_name)):
-            os.mkdir(os.path.join(opt.output_dir_root, audio_name))
 
         print('Loss:%f' % (total_loss/count))
 
@@ -176,7 +177,6 @@ def main():
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'input_binaural.wav'), audio, sr=opt.audio_sampling_rate)
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'predicted_binaural.wav'), predicted_binaural_audio, sr=opt.audio_sampling_rate)
 
-        exit()
 
 if __name__ == '__main__':
     main()
