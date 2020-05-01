@@ -99,7 +99,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer5 = unet_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
         
     def forward(self, audio_spec, visual_feature_left, visual_feature_right):
-        audio_conv1feature = self.audionet_convlayer1(x)
+        audio_conv1feature = self.audionet_convlayer1(audio_spec)
         audio_conv2feature = self.audionet_convlayer2(audio_conv1feature)
         audio_conv3feature = self.audionet_convlayer3(audio_conv2feature)
         audio_conv4feature = self.audionet_convlayer4(audio_conv3feature)
