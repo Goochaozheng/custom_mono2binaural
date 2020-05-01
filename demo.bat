@@ -1,1 +1,1 @@
-python demo.py --input_audio_path demo/data/000036.wav --input_video_path demo/data/000036.mp4 --model_path trained_model/parallel_resnet_include.pth --output_dir_root demo/output/parallel_resnet_include/000036 --input_audio_length 10 --hop_size 0.05
+python demo.py --input_audio_path H:/FAIR-Play/FAIR-Play/audio_h5/audio.h5 --data_path data/split-8/test.h5 --model_path trained_model/parallel_resnet_include.pth --output_dir_root demo/output/parallel_resnet_include --input_audio_length 10 --hop_size 0.05

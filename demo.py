@@ -64,9 +64,7 @@ def main():
         audio_channel2 = audio[1,:]
 
         #load video 
-        path_parts[-1] = audio_name
         frame_path = "H:\\FAIR-Play\\FAIR-Play\\frames\\" + audio_name
-        
 
         #define the transformation to perform on visual frames
         vision_transform_list = [transforms.Resize((128,256)), transforms.ToTensor()]
@@ -95,19 +93,18 @@ def main():
             data['audio_diff'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 - audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
             data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
             #get the frame index for current window
-            frame_index = int(((((sliding_window_start + samples_per_window) / 2.0) / audio.shape[-1]) * opt.input_audio_length) * 10)
+            frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * 10)
 
             #Read frame
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
             frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
+			frame = frame.to(device)
+			data['frame'] = frame
 
             with torch.no_grad():
-                frame = frame.to(device)
-                # visual_feature = visual_extraction(frame)
-                # data['visual_feature'] = visual_feature
-                data['frame'] = frame
                 output = model.forward(data)
-                predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+
+			predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
             # display test err
             loss_criterion = torch.nn.MSELoss()
@@ -137,7 +134,7 @@ def main():
         data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
         #get the frame index for last window
         
-        frame_index = int(((((sliding_window_start + samples_per_window) / 2.0) / audio.shape[-1]) * opt.input_audio_length) * 10)
+        frame_index = int(round((opt.input_audio_length - opt.audio_length / 2.0) * 10))
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
 
         #check output directory
@@ -146,14 +143,14 @@ def main():
         #save sample image
         frame.save(os.path.join(opt.output_dir_root, audio_name, 'sample_image.png'))
         frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
-        
+	
+		frame = frame.to(device)
+		data['frame'] = frame
+
         with torch.no_grad():
-            frame = frame.to(device)
-            # visual_feature = visual_extraction(frame)
-            # data['visual_feature'] = visual_feature
-            data['frame'] = frame
             output = model.forward(data)
-            predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+
+		predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
         #ISTFT to convert back to audio
         reconstructed_stft_diff = predicted_spectrogram[0,:,:] + (1j * predicted_spectrogram[1,:,:])
