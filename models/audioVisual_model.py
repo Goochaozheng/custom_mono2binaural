@@ -39,6 +39,8 @@ class AudioVisualModel(torch.nn.Module):
         frame = input['frame'].cuda()
         audio_mix = input['audio_mix'].cuda()
 
+        frame_l = 
+        frame_r = 
         mask_prediction = self.u_net(audio_mix, frame) # U-Net
 
         # complex masking to obtain the predicted spectrogram by complex multiplying (a+bi)(b+ci) = (ac-bd)+(bc+ad)i

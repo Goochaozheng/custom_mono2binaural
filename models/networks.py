@@ -90,7 +90,7 @@ class AudioNet(nn.Module):
 
         # channel number
         #1024 = 512 (visual feature) + 512 (audio feature)
-        self.audionet_upconvlayer1 = unet_upconv(1024, ngf*8) 
+        self.audionet_upconvlayer1 = unet_upconv(1536, ngf*8) 
         self.audionet_upconvlayer2 = unet_upconv(ngf*24, ngf*4)
         self.audionet_upconvlayer3 = unet_upconv(ngf*12, ngf*2)
         self.audionet_upconvlayer4 = unet_upconv(ngf*6, ngf)
@@ -136,12 +136,15 @@ class AudioNet(nn.Module):
         audio_conv4feature = self.audionet_convlayer4(audio_conv3feature)#(, 512, 16, 4)
         audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)# (, 512, 8, 2)
 
-        # Video encode
+        # Global frame encode
         video_res1feature = self.residual_block1(visual_frame) #(, 64, 32, 64)
         video_res2feature = self.residual_block2(video_res1feature) #(, 128, 16, 32)
         video_res3feature = self.residual_block3(video_res2feature) #(, 256, 8, 16)
         video_res4feature = self.residual_block4(video_res3feature) #(, 512, 4, 8)
-            
+
+        # Cropped frame encode
+        frame_left = 
+
         #Conv
         video_res5feature = self.visual_conv(video_res4feature)
         video_res5feature = video_res5feature.transpose(2,3)
