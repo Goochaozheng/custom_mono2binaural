@@ -12,7 +12,8 @@ import time
 
 def create_optimizer(model, opt):
 
-    param_group = [{'params': model.u_net.parameters(), 'lr': opt.lr_audio}]
+    param_group = [{'params': model.u_net.parameters(), 'lr': opt.lr_audio},
+                   {'params': model.visual_extract.parameters(), 'lr': opt.lr_audio}]
 
     if opt.optimizer == 'sgd':
         return torch.optim.SGD(param_group, momentum=opt.beta1, weight_decay=opt.weight_decay)
