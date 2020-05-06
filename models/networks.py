@@ -77,12 +77,12 @@ class VisualNet(nn.Module):
 
     def forward(self, frame):
 
-        visual_feature = visual_conv_1(frame)
-        visual_feature = visual_conv_2(visual_feature)
-        visual_feature = visual_conv_3(visual_feature)
-        visual_feature = visual_conv_4(visual_feature)
-        visual_feature = visual_conv_5(visual_feature)
-        visual_feature = visual_conv_6(visual_feature)
+        visual_feature = self.visual_conv_1(frame)
+        visual_feature = self.visual_conv_2(visual_feature)
+        visual_feature = self.visual_conv_3(visual_feature)
+        visual_feature = self.visual_conv_4(visual_feature)
+        visual_feature = self.visual_conv_5(visual_feature)
+        visual_feature = self.visual_conv_6(visual_feature)
 
         return visual_feature
 
