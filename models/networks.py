@@ -69,9 +69,11 @@ def merge_visual_feature(visual_feature_left, visual_feature_right):
 class VisualNet(nn.Module):
     def __init__(self):
         super(VisualNet, self).__init__()
-        original_resnet = torchvision.models.resnet18(pretrained=True)
-        layers = list(original_resnet.children())[0:-2]
-        self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
+        # original_resnet = torchvision.models.resnet18(pretrained=True)
+        # layers = list(original_resnet.children())[0:-2]
+        # self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
+
+
 
     def forward(self, x):
         x = self.feature_extraction(x)
@@ -82,7 +84,7 @@ class AudioNet(nn.Module):
     def __init__(self, ngf=64, input_nc=2, output_nc=2):
         super(AudioNet, self).__init__()
 
-        self.visual_conv = create_conv(512, 512, kernel=2, stride=2, paddings=0)
+        self.visual_conv = create_conv(512, 128, kernel=2, stride=2, paddings=0)
         self.visual_fusion = create_conv(1024, 512, kernel=1, stride=1, paddings=0)
 
         #initialize layers
@@ -107,12 +109,12 @@ class AudioNet(nn.Module):
 
         visual_feature_left = self.visual_conv(visual_feature_left)
         visual_feature_right = self.visual_conv(visual_feature_right)
-
-        # visual_feature = merge_visual_feature(visual_feature_left, visual_feature_right)
+        visual_feature_left = visual_feature_left.view(visual_feature_left.shape[0], -1 ,1, 1)
+        visual_feature_right = visual_feature_right.view(visual_feature_right.shape[0], -1 ,1, 1)
         visual_feature = torch.cat((visual_feature_left, visual_feature_right), dim=1)
+        visual_feature = visual_feature.repeat(1,1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1])
         visual_feature = self.visual_fusion(visual_feature)
-        visual_feature = visual_feature.repeat(1,1,4,1)
-
+        
         audioVisual_feature = torch.cat((visual_feature, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
