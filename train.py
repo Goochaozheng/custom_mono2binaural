@@ -67,11 +67,7 @@ def main():
         dataset_size_val = len(dataset_val)
         print('#validation clips = %d' % dataset_size_val)
         opt.mode = 'train' #set it back
-
-    # Tensorboard
-    if opt.tensorboard:
-        writer = SummaryWriter(comment=opt.name)
-    
+   
     # Build network
     if len(opt.model_weights) > 0:
         model = torch.load(opt.model_weights)
@@ -79,9 +75,6 @@ def main():
         model = AudioVisualModel(opt)
     model.to(device)
     model.train()
-
-    if opt.tensorboard:
-        writer.add_graph(model, next(iter(dataloader)))
 
     # Create optimizer
     optimizer = create_optimizer(model, opt)
@@ -98,6 +91,10 @@ def main():
     batch_loss = []
     best_err = float("inf")
 
+    # Tensorboard
+    if opt.tensorboard:
+        writer = SummaryWriter(comment=opt.name)
+        writer.add_graph(model, next(iter(dataloader)))
 
     for epoch in range(1, opt.niter+1):
         torch.cuda.synchronize()
