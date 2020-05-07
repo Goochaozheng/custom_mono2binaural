@@ -85,7 +85,7 @@ class CustomDataset(torch.utils.data.Dataset):
 
         data = {
             # 'visual_feature': visual_feature,
-            'frame': frame,
+            'frame': frame_list,
             'audio_mix': audio_mix_spec,
             'audio_diff': audio_diff_spec
         }
