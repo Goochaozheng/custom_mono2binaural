@@ -101,10 +101,10 @@ class AudioNet(nn.Module):
         self.audionet_convlayer5 = unet_conv(ngf * 8, ngf * 8)
 
         self.audionet_upconvlayer1 = unet_upconv(1024, ngf * 8) 
-        self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf *4)
-        self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf * 2)
-        self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf)
-        self.audionet_upconvlayer5 = unet_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
+        self.audionet_upconvlayer2 = unet_upconv(ngf * 8, ngf *4)
+        self.audionet_upconvlayer3 = unet_upconv(ngf * 4, ngf * 2)
+        self.audionet_upconvlayer4 = unet_upconv(ngf * 2, ngf)
+        self.audionet_upconvlayer5 = unet_upconv(ngf, output_nc, True) #outermost layer use a sigmoid to bound the mask
         
     def forward(self, audio_spec, visual_feature_left, visual_feature_right):
         audio_conv1feature = self.audionet_convlayer1(audio_spec)
@@ -122,8 +122,9 @@ class AudioNet(nn.Module):
         audioVisual_feature = torch.cat((visual_feature, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
-        audio_upconv2feature = self.audionet_upconvlayer2(torch.cat((audio_upconv1feature, audio_conv4feature), dim=1))
-        audio_upconv3feature = self.audionet_upconvlayer3(torch.cat((audio_upconv2feature, audio_conv3feature), dim=1))
-        audio_upconv4feature = self.audionet_upconvlayer4(torch.cat((audio_upconv3feature, audio_conv2feature), dim=1))
-        mask_prediction = self.audionet_upconvlayer5(torch.cat((audio_upconv4feature, audio_conv1feature), dim=1)) * 2 - 1
+        audio_upconv2feature = self.audionet_upconvlayer2(audio_upconv1feature)
+        audio_upconv3feature = self.audionet_upconvlayer3(audio_upconv2feature)
+        audio_upconv4feature = self.audionet_upconvlayer4(audio_upconv3feature)
+        mask_prediction = self.audionet_upconvlayer5(audio_upconv4feature) * 2 - 1
+
         return mask_prediction
