@@ -15,16 +15,18 @@ import functools
 import torchvision
 
 
-def create_upconv(input_nc, output_nc, outermost=False):
-    upconv = nn.ConvTranspose2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
-    uprelu = nn.LeakyReLU(0.2, True)
-    upnorm = nn.BatchNorm2d(output_nc)
+def create_upconv(input_nc, output_nc, batch_norm=False, outermost=False):
+    model = [nn.ConvTranspose2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)]
+    if batch_norm:
+        model.append(nn.BatchNorm2d(output_nc))
     if not outermost:
-        return nn.Sequential(*[upconv, upnorm, uprelu])
+        model.append(nn.LeakyReLU(0.2, True))
     else:
-        return nn.Sequential(*[upconv, nn.Sigmoid()])
+        model.append(nn.Sigmoid())
+
+    return nn.Sequential(*model)
         
-def create_conv(input_channels, output_channels, kernel=4, paddings=1, stride=2, batch_norm=True, Relu=True):
+def create_conv(input_channels, output_channels, kernel=4, paddings=1, stride=2, batch_norm=False, Relu=True):
     model = [nn.Conv2d(input_channels, output_channels, kernel, stride=stride, padding=paddings)]
     if(batch_norm):
         model.append(nn.BatchNorm2d(output_channels))
@@ -32,7 +34,7 @@ def create_conv(input_channels, output_channels, kernel=4, paddings=1, stride=2,
         model.append(nn.LeakyReLU(0.2, True))
     return nn.Sequential(*model)
 
-def create_conv_3d(input_channels, output_channels, kernel=(2,4,4), paddings=(0,1,1), stride=(1,2,2), batch_norm=True, Relu=True):
+def create_conv_3d(input_channels, output_channels, kernel=(2,4,4), paddings=(0,1,1), stride=(1,2,2), batch_norm=False, Relu=True):
     model = [nn.Conv3d(input_channels, output_channels, kernel, stride=stride, padding=paddings)]
     if(batch_norm):
         model.append(nn.BatchNorm3d(output_channels))
