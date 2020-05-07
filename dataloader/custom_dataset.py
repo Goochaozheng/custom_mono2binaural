@@ -23,7 +23,7 @@ class CustomDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.data_source['audio'])
 
-    def __getitem__(self, idx):
+    def __getitem__(self, index):
 
         path_parts = self.data_source['audio'][index].decode().strip().split('\\')
         audio_index = int(path_parts[-1][:-4]) - 1
