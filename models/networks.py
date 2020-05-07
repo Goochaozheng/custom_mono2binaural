@@ -71,6 +71,7 @@ class VisualNet(nn.Module):
         visual_feature = self.visual_conv1(frames)
         visual_feature = self.visual_conv2(visual_feature)
         visual_feature = visual_feature.squeeze(2)
+        visual_feature = self.visual_conv3(visual_feature)
         visual_feature = self.visual_conv4(visual_feature)
         visual_feature = self.visual_conv5(visual_feature)
         visual_feature = self.visual_conv6(visual_feature)
