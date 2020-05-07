@@ -63,14 +63,19 @@ class CustomDataset(torch.utils.data.Dataset):
         path_parts[-2] = 'frames'
         frame_path = '/'.join(path_parts)
 
-        frame_index = int(audio_start_time * 10)  #10 frames extracted per second
+        frame_index = int(audio_start_time * 10)
+        if frame_index == 0: frame_index = 1  #10 frames extracted per second
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
         frame = frame.resize((256,128))
         frame = transforms.ToTensor()(frame)
         frame_list = frame.unsqueeze(0)
 
+        frame_count = len(os.listdir(frame_path))
+
         for i in range(2):
             frame_index = frame_index + 2
+            if frame_index > frame_count:
+                frame_index = frame_count
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
             frame = frame.resize((256,128))
             frame = transforms.ToTensor()(frame)
