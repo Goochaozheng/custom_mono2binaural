@@ -12,7 +12,7 @@ import time
 
 def create_optimizer(model, opt):
 
-    param_groups = [{'params': model.u_net.parameters(), 'lr': opt.lr_visual},
+    param_groups = [{'params': model.u_net.parameters(), 'lr': opt.lr_audio},
                     {'params': model.visual_extract.parameters(), 'lr': opt.lr_audio}]
 
     if opt.optimizer == 'sgd':
@@ -66,17 +66,10 @@ def main():
         dataset_size_val = len(dataloader_val)
         print('#validation clips = %d' % dataset_size_val)
         opt.mode = 'train' #set it back
-
-    # Tensorboard
-    if opt.tensorboard:
-        writer = SummaryWriter(comment=opt.name)
     
     # Build network
     model = AudioVisualModel(opt)
     model.to(device)
-
-    if opt.tensorboard:
-        writer.add_graph(model, next(iter(dataloader)))
 
     # Create optimizer
     optimizer = create_optimizer(model, opt)
@@ -93,6 +86,9 @@ def main():
     batch_loss = []
     best_err = float("inf")
 
+    if opt.tensorboard:
+        writer = SummaryWriter(comment=opt.name)
+        writer.add_graph(model, next(iter(dataloader)))
 
     for epoch in range(1, opt.niter+1):
         torch.cuda.synchronize()
