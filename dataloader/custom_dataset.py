@@ -8,6 +8,18 @@ import numpy as np
 import os
 import torchvision.transforms as transforms
 
+def generate_spectrogram(audio):
+    spectro = librosa.core.stft(audio, n_fft=512, hop_length=160, win_length=400, center=True)
+    real = np.expand_dims(np.real(spectro), axis=0)
+    imag = np.expand_dims(np.imag(spectro), axis=0)
+    spectro_two_channel = np.concatenate((real, imag), axis=0)
+    return spectro_two_channel
+
+def normalize(samples, desired_rms = 0.1, eps = 1e-4):
+  rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
+  samples = samples * (desired_rms / rms)
+  return samples
+
 class CustomDataset(torch.utils.data.Dataset):
 
     def __init__(self, opt):
