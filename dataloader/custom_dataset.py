@@ -74,7 +74,7 @@ class CustomDataset(torch.utils.data.Dataset):
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
             frame = frame.resize((256,128))
             frame = transforms.ToTensor()(frame)
-            frame_list = torch.cat(frame_list, frame.unsqueeze(0), dim=0)
+            frame_list = torch.cat((frame_list, frame.unsqueeze(0)), dim=0)
 
         frame_list = torch.transpose(frame_list, 0, 1)
 
