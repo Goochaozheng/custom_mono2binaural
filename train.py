@@ -86,6 +86,7 @@ def main():
     batch_loss = []
     best_err = float("inf")
 
+
     if opt.tensorboard:
         writer = SummaryWriter(comment=opt.name)
         writer.add_graph(model, next(iter(dataloader)))
