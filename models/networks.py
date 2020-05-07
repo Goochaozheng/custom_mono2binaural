@@ -27,14 +27,12 @@ def visual_conv3d(input_nc, output_nc, kernel_size=4, stride=2, padding=1):
 
 def unet_conv(input_nc, output_nc, norm_layer=nn.BatchNorm2d):
     downconv = nn.Conv2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
-    # dropout = nn.Dropout2d(p=0.5)
     downrelu = nn.LeakyReLU(0.2, True)
     downnorm = norm_layer(output_nc)
     return nn.Sequential(*[downconv, downnorm, downrelu])
 
 def unet_upconv(input_nc, output_nc, outermost=False, norm_layer=nn.BatchNorm2d):
     upconv = nn.ConvTranspose2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)
-    # dropout = nn.Dropout2d(p=0.5)
     uprelu = nn.ReLU(inplace=True)
     upnorm = norm_layer(output_nc)
     if not outermost:
@@ -49,6 +47,15 @@ def create_conv(input_channels, output_channels, kernel, paddings, batch_norm=Tr
     if(Relu):
         model.append(nn.ReLU(inplace=True))
     return nn.Sequential(*model)
+
+def create_conv_3d(input_channels, output_channels, kernel, paddings, batch_norm=True, Relu=True, stride=1):
+    model = [nn.Conv3d(input_channels, output_channels, kernel, stride = stride, padding = paddings)]
+    if(batch_norm):
+        model.append(nn.BatchNorm3d(output_channels))
+    if(Relu):
+        model.append(nn.ReLU(inplace=True))
+    return nn.Sequential(*model)
+
 
 def weights_init(m):
     #initialize weights normal_(mean, std)
@@ -65,12 +72,11 @@ def weights_init(m):
 class VisualNet(nn.Module):
     def __init__(self):
         super(VisualNet, self).__init__()
-        self.visual_conv1 = visual_conv3d(3, 8, kernel_size=(2,4,4))
-        self.visual_conv2 = visual_conv3d(8, 16)
+        self.visual_conv1 = visual_conv3d(3, 64, kernel_size=(2,4,4))
+        self.visual_conv2 = visual_conv3d(64, 128)
         self.visual_conv3 = visual_conv3d(16, 32, kernel_size=(2,4,4), padding=(0,1,1))
         self.visual_conv4 = unet_conv(32,64)
         self.visual_conv5 = unet_conv(64,64)
-        self.visual_conv6 = unet_conv(64,64)
 
     def forward(self, x):
         out = self.visual_conv1(x)
