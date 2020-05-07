@@ -55,8 +55,8 @@ class CustomDataset(torch.utils.data.Dataset):
         frame = transforms.ToTensor()(frame)
         frame_list = frame.unsqueeze(0)
 
-        for i in range(5):
-            frame_index = frame_index + 1
+        for i in range(2):
+            frame_index = frame_index + 2
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
             frame = frame.resize((256,128))
             frame = transforms.ToTensor()(frame)
