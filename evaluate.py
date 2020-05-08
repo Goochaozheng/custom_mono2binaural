@@ -11,6 +11,7 @@ import os
 import librosa
 import argparse
 import numpy as np
+import h5py
 from numpy import linalg as LA
 from scipy.signal import hilbert
 import statistics as stat
@@ -71,6 +72,8 @@ def main():
     stft_distance_list = []
     envelope_distance_list = []
 
+    record_array = []
+
     audioNames = os.listdir(args.results_root)
     index = 1
 
@@ -92,6 +95,9 @@ def main():
         envelope_distance_list.append(env_dis)
         index = index + 1
 
+        record = [int(audio_name), stft_dis, env_dis]
+        record_array.append(record)
+
         print("STFT L2 Distance: ", stft_dis)
         print("Envelope Distance: ", env_dis)
 
@@ -100,6 +106,10 @@ def main():
     print("Average STFT L2 Distance: ", stat.mean(stft_distance_list))
     # print("Average Envelope Distance: ", stat.mean(envelope_distance_list), stat.stdev(envelope_distance_list), stat.stdev(envelope_distance_list) / np.sqrt(len(envelope_distance_list)))
     print("Average Envelope Distance: ", stat.mean(envelope_distance_list))
+
+    record_array = np.array(record_array)
+    f = h5py.File(os.path.join(args.results_root, "evaluate_output.h5"))
+    f.create_dataset('evaluate', data=record_array)
 
 if __name__ == '__main__':
     main()
