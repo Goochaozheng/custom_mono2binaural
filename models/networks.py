@@ -54,7 +54,7 @@ def weights_init(m):
     if classname.find('Conv') != -1:
         torch.nn.init.kaiming_normal_(m.weight)
     elif classname.find('BatchNorm') != -1:
-        torch.nn.init.kaiming_normal_(m.weight)
+        m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
     elif classname.find('Linear') != -1:
         torch.nn.init.kaiming_normal_(m.weight)
