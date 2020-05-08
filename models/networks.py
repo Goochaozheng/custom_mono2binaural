@@ -115,7 +115,7 @@ class AudioNet(nn.Module):
         audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)
 
         visual_global = visual_global.view(visual_global.shape[0], -1, 1, 1)
-        visual_cropped = visual_cropped.view(visual_cropped[0], -1, 1, 1)
+        visual_cropped = visual_cropped.view(visual_cropped.shape[0], -1, 1, 1)
         visual_feat = torch.cat((visual_cropped, visual_global), dim=1)
         visual_feat = visual_feat.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1])
         
