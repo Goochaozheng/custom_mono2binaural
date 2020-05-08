@@ -89,7 +89,7 @@ class VisualNetGlobal(nn.Module):
         visual_feature = self.visual_conv4(visual_feature)        
         return visual_feature #(, 64, 2, 4)
 
-# U-Net
+
 class AudioNet(nn.Module):
     def __init__(self, ngf=64, input_nc=2, output_nc=2):
         super(AudioNet, self).__init__()
