@@ -25,30 +25,33 @@ class AudioVisualModel(torch.nn.Module):
         super(AudioVisualModel, self).__init__()
         self.opt = opt
         #initialize model
-        self.u_net = networks.AudioNet(
+        self.audio_gen = networks.AudioNet(
             ngf=opt.unet_ngf,
             input_nc=opt.unet_input_nc,
             output_nc=opt.unet_output_nc
         )
-        self.visual_extract = networks.VisualNet()
+        self.visual_global = networks.VisualNet()
+        self.visual_cropped = networks.VisualNet()
 
-        self.u_net.apply(networks.weights_init)
-        self.visual_extract.apply(networks.weights_init)
+        self.audio_gen.apply(networks.weights_init)
+        self.visual_global.apply(networks.weights_init)
 
     def forward(self, input, volatile=False):
         # visual_feature = input['visual_feature'].cuda()
         frame = input['frame'].cuda()
+        frame_cropped = input['frame_cropped'].cuda()
         audio_mix = input['audio_mix'].cuda()
-        # audio_diff = input['audio_diff'].cuda()
+        # audio_cropped = input['audio_cropped'].cuda()
 
-        visual_feature = self.visual_extract(frame) # Resnet-18
-        mask_prediction = self.u_net(audio_mix, visual_feature) # U-Net
+        visual_feature_globals = self.visual_global(frame)
+        visual_feature_cropped = self.visual_cropped(frame_cropped)
+        mask_prediction = self.audio_gen(audio_mix, visual_feature_globals, visual_feature_cropped)
 
         # complex masking to obtain the predicted spectrogram by complex multiplying (a+bi)(b+ci) = (ac-bd)+(bc+ad)i
         # mask_prediction (, 2, 256, 64)
-        spectrogram_diff_real = audio_mix[:,0,:-1,:] * mask_prediction[:,0,:,:] - audio_mix[:,1,:-1,:] * mask_prediction[:,1,:,:]
-        spectrogram_diff_img = audio_mix[:,0,:-1,:] * mask_prediction[:,1,:,:] + audio_mix[:,1,:-1,:] * mask_prediction[:,0,:,:]
+        pred_spectrogram_real = audio_mix[:,0,:-1,:] * mask_prediction[:,0,:,:] - audio_mix[:,1,:-1,:] * mask_prediction[:,1,:,:]
+        pred_spectrogram_img = audio_mix[:,0,:-1,:] * mask_prediction[:,1,:,:] + audio_mix[:,1,:-1,:] * mask_prediction[:,0,:,:]
         
-        binaural_spectrogram = torch.cat((spectrogram_diff_real.unsqueeze(1), spectrogram_diff_img.unsqueeze(1)), 1)
+        pred_spectrogram = torch.cat((pred_spectrogram_real.unsqueeze(1), pred_spectrogram_img.unsqueeze(1)), 1)
 
-        return binaural_spectrogram
+        return pred_spectrogram

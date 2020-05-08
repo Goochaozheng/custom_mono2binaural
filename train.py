@@ -12,8 +12,8 @@ import time
 
 def create_optimizer(model, opt):
 
-    param_groups = [{'params': model.u_net.parameters(), 'lr': opt.lr_audio},
-                    {'params': model.visual_extract.parameters(), 'lr': opt.lr_audio}]
+    param_groups = [{'params': model.audio_gen.parameters(), 'lr': opt.lr_audio},
+                    {'params': model.visual_global.parameters(), 'lr': opt.lr_audio}]
 
     if opt.optimizer == 'sgd':
         return torch.optim.SGD(param_groups, momentum=opt.beta1, weight_decay=opt.weight_decay)
@@ -27,7 +27,7 @@ def display_val(model, loss_criterion, writer, index, dataset_val, opt):
         for i, val_data in enumerate(dataset_val):
             if i < opt.validation_batches:
                 output = model.forward(val_data)
-                loss = loss_criterion(output, val_data['audio_diff'][:,:,:-1,:].cuda())
+                loss = loss_criterion(output, val_data['audio_cropped'][:,:,:-1,:].cuda())
                 losses.append(loss.item()) 
             else:
                 break
@@ -110,7 +110,7 @@ def main():
             output = model.forward(data)
 
             # Compute loss
-            loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:].cuda())
+            loss = loss_criterion(output, data['audio_cropped'][:,:,:-1,:].cuda())
             batch_loss.append(loss.item())  
 
             if(opt.measure_time):
