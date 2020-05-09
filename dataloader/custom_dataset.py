@@ -80,7 +80,6 @@ class CustomDataset(torch.utils.data.Dataset):
         frame_cropped = transforms.ToTensor()(frame_cropped)
 
         data = {
-            # 'visual_feature': visual_feature,
             'frame': frame,
             'frame_cropped': frame_cropped,
             'audio_mix': audio_mix_spec,
