@@ -31,7 +31,7 @@ class AudioVisualModel(torch.nn.Module):
             output_nc=opt.unet_output_nc
         )
         self.visual_global = networks.VisualNetGlobal()
-        self. = networks.VisualNetCropped()
+        self.visual_cropped = networks.VisualNetCropped()
 
         self.audio_gen.apply(networks.weights_init)
 
