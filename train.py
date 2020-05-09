@@ -68,7 +68,11 @@ def main():
         opt.mode = 'train' #set it back
     
     # Build network
-    model = AudioVisualModel(opt)
+    if len(opt.trained_weights) == 0:
+        model = AudioVisualModel(opt)
+    else:
+        model = torch.load(opt.trained_weights)
+        
     model.to(device)
 
     # Create optimizer
