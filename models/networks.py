@@ -52,12 +52,13 @@ def weights_init(m):
     #initialize weights normal_(mean, std)
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
-        torch.nn.init.kaiming_normal_(m.weight)
+        m.weight.data.normal_(0, 0.02)
     elif classname.find('BatchNorm') != -1:
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
     elif classname.find('Linear') != -1:
-        torch.nn.init.kaiming_normal_(m.weight)
+        m.weight.data.normal_(0, 0.02)
+
 
 class VisualNetCropped(nn.Module):
     def __init__(self):
@@ -72,7 +73,7 @@ class VisualNetCropped(nn.Module):
         visual_feature = self.visual_conv2(visual_feature)
         visual_feature = self.visual_conv3(visual_feature)
         visual_feature = self.visual_conv4(visual_feature)        
-        return visual_feature #(, 64, 2, 2)
+        return visual_feature #(, 64, 4, 4)
 
 
 class VisualNetGlobal(nn.Module):
@@ -84,7 +85,6 @@ class VisualNetGlobal(nn.Module):
         self.visual_conv4 = create_conv(64, 64)
 
     def forward(self, frame):
-
         visual_feature = self.visual_conv1(frame)
         visual_feature = self.visual_conv2(visual_feature)
         visual_feature = self.visual_conv3(visual_feature)

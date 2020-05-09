@@ -16,9 +16,9 @@ def generate_spectrogram(audio):
     return spectro_two_channel
 
 def normalize(samples, desired_rms = 0.1, eps = 1e-4):
-    rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
-    samples = samples * (desired_rms / rms)
-    return samples
+  rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
+  samples = samples * (desired_rms / rms)
+  return samples
 
 class CustomDataset(torch.utils.data.Dataset):
 
@@ -30,7 +30,7 @@ class CustomDataset(torch.utils.data.Dataset):
         elif opt.mode == 'train':
             path = os.path.join(opt.data_dir, 'train.h5')
         elif opt.mode == 'test':
-            path = os.path.join(opt.data_dir, 'test.h5')
+            path = os.path.join(opt.data_dir, 'test.h5')            
         self.data_source = h5py.File(path)
         self.audio_source = h5py.File(opt.audio_source)
 
