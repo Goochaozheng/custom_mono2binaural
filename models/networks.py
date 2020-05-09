@@ -76,17 +76,14 @@ class VisualNetCropped(nn.Module):
 class VisualNetGlobal(nn.Module):
     def __init__(self):
         super(VisualNetGlobal, self).__init__()
-        self.visual_conv1 = create_conv(3, 16, kernel=8, paddings=2, stride=4)
-        self.visual_conv2 = create_conv(16, 32, kernel=8, paddings=2, stride=4)
-        self.visual_conv3 = create_conv(32, 64)
-        self.visual_conv4 = create_conv(64, 64)
+        original_resnet = torchvision.models.resnet18(pretrained=True)
+        layers = list(original_resnet.children())[0:-2]
+        self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
+        self.feature_compression = create_conv(input_channels=512, output_channels=32, kernel=1, paddings=0, stride=1)
 
     def forward(self, frame):
-
-        visual_feature = self.visual_conv1(frame)
-        visual_feature = self.visual_conv2(visual_feature)
-        visual_feature = self.visual_conv3(visual_feature)
-        visual_feature = self.visual_conv4(visual_feature)        
+        visual_feature = self.feature_extraction(frame)
+        visual_feature = self.feature_compression(visual_feature)    
         return visual_feature #(, 64, 2, 4)
 
 
@@ -122,9 +119,9 @@ class AudioNet(nn.Module):
         audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
-        audio_upconv2feature = self.audionet_upconvlayer2(audio_upconv1feature)
-        audio_upconv3feature = self.audionet_upconvlayer3(audio_upconv2feature)
-        audio_upconv4feature = self.audionet_upconvlayer4(audio_upconv3feature)
-        mask_prediction = self.audionet_upconvlayer5(audio_upconv4feature) * 2 - 1
+        audio_upconv2feature = self.audionet_upconvlayer2(torch.cat((audio_upconv1feature, audio_conv4feature), dim=1))
+        audio_upconv3feature = self.audionet_upconvlayer3(torch.cat((audio_upconv2feature, audio_conv3feature), dim=1))
+        audio_upconv4feature = self.audionet_upconvlayer4(torch.cat((audio_upconv3feature, audio_conv2feature), dim=1))
+        mask_prediction = self.audionet_upconvlayer5(torch.cat((audio_upconv4feature, audio_conv1feature), dim=1)) * 2 - 1
 
         return mask_prediction
