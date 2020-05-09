@@ -73,7 +73,10 @@ def main():
         writer = SummaryWriter(comment=opt.name)
     
     # Build network
-    model = AudioVisualModel(opt)
+    if len(opt.trained_weights) > 0:
+        model = torch.load(opt.trained_weights)
+    else:
+        model = AudioVisualModel(opt)
     model.to(device)
 
     if opt.tensorboard:
