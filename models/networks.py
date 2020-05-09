@@ -98,10 +98,10 @@ class AudioNet(nn.Module):
         self.audionet_convlayer5 = create_conv(ngf * 8, ngf * 8)
 
         self.audionet_upconvlayer1 = create_upconv(2048, ngf * 8)
-        self.audionet_upconvlayer2 = create_upconv(ngf * 8, ngf *4)
-        self.audionet_upconvlayer3 = create_upconv(ngf * 4, ngf * 2)
-        self.audionet_upconvlayer4 = create_upconv(ngf * 2, ngf)
-        self.audionet_upconvlayer5 = create_upconv(ngf, output_nc, True) #outermost layer use a sigmoid to bound the mask
+        self.audionet_upconvlayer2 = create_upconv(ngf * 16, ngf *4)
+        self.audionet_upconvlayer3 = create_upconv(ngf * 8, ngf * 2)
+        self.audionet_upconvlayer4 = create_upconv(ngf * 4, ngf)
+        self.audionet_upconvlayer5 = create_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
 
 
     def forward(self, x, visual_global, visual_cropped):
