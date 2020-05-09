@@ -1,1 +1,1 @@
-python demo.py --input_audio_path demo/data/000003.wav --input_video_path demo/data/000003.mp4 --model_path checkpoints/dropout_split4/model_best.pth --output_dir_root demo/output/dropout_split4 --input_audio_length 10 --hop_size 0.05
+python demo.py --input_audio_path H:/FAIR-Play/FAIR-Play/audio_h5/audio.h5 --data_path data/split-8/test.h5 --model_path trained_model/split_1.pth --output_dir_root demo/output/split_1 --input_audio_length 10 --hop_size 0.05

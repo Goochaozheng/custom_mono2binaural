@@ -11,6 +11,7 @@ import os
 import librosa
 import argparse
 import numpy as np
+from tqdm import tqdm
 from numpy import linalg as LA
 from scipy.signal import hilbert
 import statistics as stat
@@ -74,9 +75,9 @@ def main():
     audioNames = os.listdir(args.results_root)
     index = 1
 
-    for audio_name in audioNames:
+    for audio_name in tqdm(audioNames, ascii=True):
 
-        print("Evaluating testing example " + str(index) + " :", audio_name)
+        # print("Evaluating testing example " + str(index) + " :", audio_name)
 
         predicted_binaural, audio_rate = librosa.load(os.path.join(args.results_root, audio_name, 'predicted_binaural.wav'), sr=args.audio_sampling_rate, mono=False)
         gt_binaural, audio_rate = librosa.load(os.path.join(args.results_root, audio_name, 'input_binaural.wav'), sr=args.audio_sampling_rate, mono=False)
@@ -92,8 +93,8 @@ def main():
         envelope_distance_list.append(env_dis)
         index = index + 1
 
-        print("STFT L2 Distance: ", stft_dis)
-        print("Envelope Distance: ", env_dis)
+        # print("STFT L2 Distance: ", stft_dis)
+        # print("Envelope Distance: ", env_dis)
 
     #print the results
     # print("STFT L2 Distance: ", stat.mean(stft_distance_list), stat.stdev(stft_distance_list), stat.stdev(stft_distance_list) / np.sqrt(len(stft_distance_list)))

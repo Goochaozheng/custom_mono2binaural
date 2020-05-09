@@ -86,16 +86,17 @@ def main():
             normalizer, audio_segment = audio_normalize(audio[:,sliding_window_start:sliding_window_end])
             audio_segment_channel_left = audio_segment[0,:]
             audio_segment_channel_right = audio_segment[1,:]
-            audio_segment_mix = audio_segment_channel1 + audio_segment_channel2
+            audio_segment_mix = audio_segment_channel_left + audio_segment_channel_right
 
-            data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_left + audio_segment_channel_right)).unsqueeze(0)
+            data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_left + audio_segment_channel_right)).unsqueeze(0).cuda()
             #get the frame index for current window
-            frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * 10)
+            frame_index = int(((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * frame_count)
+            if frame_index > frame_count: frame_index = frame_count
 
             #Read frame
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-            frame = frame.resize((246,128))
-			data['frame'] = transforms.ToTensor()(frame).unsqueeze(0).cuda()
+            frame = frame.resize((256,128))
+            data['frame'] = transforms.ToTensor()(frame).unsqueeze(0).cuda()
 
             w, h = frame.size
             frame_left = frame.crop((0,0,w/2,h))
@@ -106,7 +107,7 @@ def main():
             data['audio_cropped'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_left)).unsqueeze(0).cuda()
             with torch.no_grad():
                 output = model.forward(data)
-			predicted_spectrogram_left = output[0,:,:,:].data[:].cpu().numpy()
+            predicted_spectrogram_left = output[0,:,:,:].data[:].cpu().numpy()
             loss = loss_criterion(output, data['audio_cropped'][:,:,:-1,:].cuda())
             total_loss = total_loss + loss
             count = count + 1
@@ -116,11 +117,10 @@ def main():
             data['audio_cropped'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_right)).unsqueeze(0).cuda()
             with torch.no_grad():
                 output = model.forward(data)
-			predicted_spectrogram_right = output[0,:,:,:].data[:].cpu().numpy()
+            predicted_spectrogram_right = output[0,:,:,:].data[:].cpu().numpy()
             loss = loss_criterion(output, data['audio_cropped'][:,:,:-1,:].cuda())
             total_loss = total_loss + loss
             count = count + 1
-
 
             #ISTFT to convert back to audio
             reconstructed_stft_left = predicted_spectrogram_left[0,:,:] + (1j * predicted_spectrogram_left[1,:,:])
@@ -140,11 +140,9 @@ def main():
 
         #deal with the last segment
         normalizer, audio_segment = audio_normalize(audio[:,-samples_per_window:])
-        audio_segment_channel1 = audio_segment[0,:]
-        audio_segment_channel2 = audio_segment[1,:]
-        data['audio_diff'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 - audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
-        data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
-        #get the frame index for last window
+        audio_segment_channel_left = audio_segment[0,:]
+        audio_segment_channel_right = audio_segment[1,:]
+        data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_left + audio_segment_channel_right)).unsqueeze(0).cuda()
         
         frame_index = int(round((opt.input_audio_length - opt.audio_length / 2.0) * 10))
         if frame_index > frame_count: frame_index = frame_count
@@ -155,7 +153,7 @@ def main():
             os.mkdir(os.path.join(opt.output_dir_root, audio_name))
         #save sample image
         frame.save(os.path.join(opt.output_dir_root, audio_name, 'sample_image.png'))
-        frame = frame.resize((246,128))
+        frame = frame.resize((256,128))
         data['frame'] = transforms.ToTensor()(frame).unsqueeze(0).cuda()
 
         w, h = frame.size
