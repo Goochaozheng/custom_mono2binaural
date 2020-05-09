@@ -31,10 +31,9 @@ class AudioVisualModel(torch.nn.Module):
             output_nc=opt.unet_output_nc
         )
         self.visual_global = networks.VisualNetGlobal()
-        self.visual_cropped = networks.VisualNetCropped()
+        self. = networks.VisualNetCropped()
 
         self.audio_gen.apply(networks.weights_init)
-        self.visual_global.apply(networks.weights_init)
 
     def forward(self, input, volatile=False):
         # visual_feature = input['visual_feature'].cuda()

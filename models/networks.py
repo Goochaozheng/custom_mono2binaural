@@ -79,12 +79,12 @@ class VisualNetGlobal(nn.Module):
         original_resnet = torchvision.models.resnet18(pretrained=True)
         layers = list(original_resnet.children())[0:-2]
         self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
-        self.feature_compression = create_conv(input_channels=512, output_channels=32, kernel=1, paddings=0, stride=1)
+        self.feature_compression = create_conv(input_channels=512, output_channels=16, kernel=1, paddings=0, stride=1)
 
     def forward(self, frame):
         visual_feature = self.feature_extraction(frame)
         visual_feature = self.feature_compression(visual_feature)    
-        return visual_feature #(, 64, 2, 4)
+        return visual_feature #(, 32, 4, 8)
 
 
 class AudioNet(nn.Module):
