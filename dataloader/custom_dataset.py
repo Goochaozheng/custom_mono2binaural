@@ -85,7 +85,6 @@ class CustomDataset(torch.utils.data.Dataset):
             frame_index = frame_count
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
         frame = frame.resize((256,128))
-        frame = frame_normalize(frame)
 
         w, h = frame.size
         if cropped == 0:
@@ -94,7 +93,9 @@ class CustomDataset(torch.utils.data.Dataset):
             frame_cropped = frame.crop((w/2,0,w,h))
 
         frame = transforms.ToTensor()(frame)
+        frame = frame_normalize(frame)
         frame_cropped = transforms.ToTensor()(frame_cropped)
+        frame_cropped = frame_normalize(frame_cropped)
 
         data = {
             'frame': frame,
