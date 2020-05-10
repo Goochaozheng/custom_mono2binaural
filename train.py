@@ -94,7 +94,7 @@ def main():
 
     if opt.tensorboard:
         writer = SummaryWriter(comment=opt.name)
-        writer.add_graph(model, next(iter(dataloader)))
+        # writer.add_graph(model, next(iter(dataloader)))
 
     for epoch in range(1, opt.niter+1):
         torch.cuda.synchronize()
