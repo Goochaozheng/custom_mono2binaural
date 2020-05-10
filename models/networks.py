@@ -21,7 +21,7 @@ def create_upconv(input_nc, output_nc, batch_norm=True, dropout=False, outermost
         model.append(nn.Dropout2d(0.3, True))
     if batch_norm:
         model.append(nn.BatchNorm2d(output_nc))
-    if outermost is not None:
+    if outermost_activation is not None:
         model.append(outermost_activation)
     return nn.Sequential(*model)
         
