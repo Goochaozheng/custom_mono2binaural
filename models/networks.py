@@ -15,16 +15,14 @@ import functools
 import torchvision
 
 
-def create_upconv(input_nc, output_nc, batch_norm=True, dropout=False, outermost=False):
+def create_upconv(input_nc, output_nc, batch_norm=True, dropout=False, outermost_activation=None):
     model = [nn.ConvTranspose2d(input_nc, output_nc, kernel_size=4, stride=2, padding=1)]
     if dropout:
         model.append(nn.Dropout2d(0.3, True))
     if batch_norm:
         model.append(nn.BatchNorm2d(output_nc))
-    if not outermost:
-        model.append(nn.LeakyReLU(0.2, True))
-    else:
-        model.append(nn.Sigmoid())
+    if outermost is not None:
+        model.append(outermost_activation)
     return nn.Sequential(*model)
         
 def create_conv(input_channels, output_channels, kernel=4, paddings=1, stride=2, batch_norm=True, dropout=False, Relu=True):
@@ -93,7 +91,7 @@ class VisualNetGlobal(nn.Module):
 
 
 class AudioNet(nn.Module):
-    def __init__(self, ngf=64, input_nc=2, output_nc=2):
+    def __init__(self, ngf=64, input_nc=1, output_nc=1):
         super(AudioNet, self).__init__()
         #initialize layers
         self.audionet_convlayer1 = create_conv(input_nc, ngf)
@@ -106,7 +104,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer2 = create_upconv(ngf * 8, ngf *4)
         self.audionet_upconvlayer3 = create_upconv(ngf * 4, ngf * 2)
         self.audionet_upconvlayer4 = create_upconv(ngf * 2, ngf)
-        self.audionet_upconvlayer5 = create_upconv(ngf, output_nc, True) #outermost layer use a sigmoid to bound the mask
+        self.audionet_upconvlayer5 = create_upconv(ngf, output_nc, outermost_activation=None)
 
 
     def forward(self, x, visual_global, visual_cropped):
@@ -127,6 +125,6 @@ class AudioNet(nn.Module):
         audio_upconv2feature = self.audionet_upconvlayer2(audio_upconv1feature)
         audio_upconv3feature = self.audionet_upconvlayer3(audio_upconv2feature)
         audio_upconv4feature = self.audionet_upconvlayer4(audio_upconv3feature)
-        mask_prediction = self.audionet_upconvlayer5(audio_upconv4feature) * 2 - 1
+        mask_prediction = self.audionet_upconvlayer5(audio_upconv4feature)
 
         return mask_prediction

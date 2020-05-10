@@ -10,15 +10,23 @@ import torchvision.transforms as transforms
 
 def generate_spectrogram(audio):
     spectro = librosa.core.stft(audio, n_fft=512, hop_length=160, win_length=400, center=True)
-    real = np.expand_dims(np.real(spectro), axis=0)
-    imag = np.expand_dims(np.imag(spectro), axis=0)
-    spectro_two_channel = np.concatenate((real, imag), axis=0)
-    return spectro_two_channel
+    mag = np.abs(spectro)
+    phase =  np.angle(spectro)
+    # mag_phase = np.concatenate((mag, phase), axis=0)
+    return {'mag': mag, 'phase': phase}
 
-def normalize(samples, desired_rms = 0.1, eps = 1e-4):
-  rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
-  samples = samples * (desired_rms / rms)
-  return samples
+def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
+    rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
+    samples = samples * (desired_rms / rms)
+    return samples
+
+def frame_normalize(frame):
+    normalize = transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+    return normalize(frame)
+
 
 class CustomDataset(torch.utils.data.Dataset):
 
@@ -52,12 +60,17 @@ class CustomDataset(torch.utils.data.Dataset):
         audio_start = int(audio_start_time * self.opt.audio_sampling_rate)
         audio_end = audio_start + int(self.opt.audio_length * self.opt.audio_sampling_rate)
         audio = audio[:, audio_start:audio_end]
-        audio = normalize(audio)
+        audio = audio_normalize(audio)
 
         #passing the spectrogram of the difference
-        audio_mix_spec = torch.FloatTensor(generate_spectrogram(audio[0,:] + audio[1,:]))
-        audio_cropped_spec = torch.FloatTensor(generate_spectrogram(audio[cropped,:]))
-        
+        audio_mix_mag = torch.FloatTensor(generate_spectrogram(audio[0,:] + audio[1,:])['mag'])
+        audio_mix_mag = audio_mix_mag[:-1,:].unsqueeze(0)
+        audio_mix_mag = torch.log(audio_mix_mag)
+        audio_cropped_mag = torch.FloatTensor(generate_spectrogram(audio[cropped,:])['mag'])
+        gt_mask = audio_cropped_mag / audio_mix_mag
+        gt_mask = gt_mask[:-1,:].unsqueeze(0)
+        gt_mask.clamp_(0., 5.)
+
         #get the frame dir path based on audio path
         path_parts[-1] = path_parts[-1][:-4]
         path_parts[-2] = 'frames'
@@ -69,6 +82,7 @@ class CustomDataset(torch.utils.data.Dataset):
             frame_index = frame_count
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
         frame = frame.resize((256,128))
+        frame = frame_normalize(frame)
 
         w, h = frame.size
         if cropped == 0:
@@ -82,8 +96,8 @@ class CustomDataset(torch.utils.data.Dataset):
         data = {
             'frame': frame,
             'frame_cropped': frame_cropped,
-            'audio_mix': audio_mix_spec,
-            'audio_cropped': audio_cropped_spec
+            'mix_mag': audio_mix_mag,
+            'gt_mask': audio_cropped_mag
         }
         return data
 

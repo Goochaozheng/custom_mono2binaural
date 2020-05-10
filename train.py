@@ -13,8 +13,8 @@ import time
 def create_optimizer(model, opt):
 
     param_groups = [{'params': model.audio_gen.parameters(), 'lr': opt.lr_audio},
-                    {'params': model.visual_global.parameters(), 'lr': opt.lr_audio},
-                    {'params': model.visual_cropped.parameters(), 'lr': opt.lr_audio}]
+                    {'params': model.visual_global.parameters(), 'lr': opt.lr_visual},
+                    {'params': model.visual_cropped.parameters(), 'lr': opt.lr_visual}]
 
     if opt.optimizer == 'sgd':
         return torch.optim.SGD(param_groups, momentum=opt.beta1, weight_decay=opt.weight_decay)
@@ -28,7 +28,7 @@ def display_val(model, loss_criterion, writer, index, dataset_val, opt):
         for i, val_data in enumerate(dataset_val):
             if i < opt.validation_batches:
                 output = model.forward(val_data)
-                loss = loss_criterion(output, val_data['audio_cropped'][:,:,:-1,:].cuda())
+                loss = loss_criterion(output, val_data['gt_mask'].cuda())
                 losses.append(loss.item()) 
             else:
                 break
@@ -115,7 +115,7 @@ def main():
             output = model.forward(data)
 
             # Compute loss
-            loss = loss_criterion(output, data['audio_cropped'][:,:,:-1,:].cuda())
+            loss = loss_criterion(output, data['gt_mask'].cuda())
             batch_loss.append(loss.item())  
 
             if(opt.measure_time):
@@ -177,7 +177,6 @@ def main():
         if(epoch % opt.save_epoch_freq == 0):
             print('saving the model at the end of epoch %d, total_steps %d' % (epoch, total_steps))
             torch.save(model, os.path.join('.', opt.checkpoints_dir, opt.name, str(epoch) + '_model.pth'))            
-
 
         #decrease learning rate 6% every opt.learning_rate_decrease_itr epochs
         if(opt.learning_rate_decrease_itr > 0 and epoch%opt.learning_rate_decrease_itr == 0):
