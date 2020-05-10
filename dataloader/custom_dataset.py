@@ -30,9 +30,15 @@ class CustomDataset(torch.utils.data.Dataset):
         elif opt.mode == 'train':
             path = os.path.join(opt.data_dir, 'train.h5')
         elif opt.mode == 'test':
-            path = os.path.join(opt.data_dir, 'test.h5')            
+            path = os.path.join(opt.data_dir, 'test.h5')
+            
         self.data_source = h5py.File(path)
         self.audio_source = h5py.File(opt.audio_source)
+
+        self.frame_normalize = transforms.Normalize(
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225]
+        )
 
     def __len__(self):
         return len(self.data_source['audio'])
@@ -65,7 +71,8 @@ class CustomDataset(torch.utils.data.Dataset):
 
         frame_index = int(round(((audio_start_time + audio_end_time) / 2.0 + 0.05) * 10))  #10 frames extracted per second
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-        frame = frame.resize((448,224))
+        frame = frame.resize((256,128))
+        # frame = self.frame_normalize(frame)
         frame = transforms.ToTensor()(frame)
 
         data = {
