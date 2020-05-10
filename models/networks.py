@@ -54,30 +54,31 @@ def weights_init(m):
 class VisualNet(nn.Module):
     def __init__(self):
         super(VisualNet, self).__init__()
-        original_resnet = torchvision.models.resnet18(pretrained=True)
-        layers = list(original_resnet.children())[0:-2]
-        self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
+        r_cnn = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+        layers = list(r_cnn.children())[1:-2]
+        self.feature_extraction = torch.nn.Sequential(*layers)
 
     def forward(self, x):
         x = self.feature_extraction(x)
-        return x
+        return x['pool']
 
 # U-Net
 class AudioNet(nn.Module):
     def __init__(self, ngf=64, input_nc=2, output_nc=2):
         super(AudioNet, self).__init__()
         #initialize layers
-        self.audionet_convlayer1 = unet_conv(input_nc, ngf)
-        self.audionet_convlayer2 = unet_conv(ngf, ngf * 2)
-        self.audionet_convlayer3 = unet_conv(ngf * 2, ngf * 4)
-        self.audionet_convlayer4 = unet_conv(ngf * 4, ngf * 8)
-        self.audionet_convlayer5 = unet_conv(ngf * 8, ngf * 8)
-        self.audionet_upconvlayer1 = unet_upconv(1296, ngf * 8) #1296 (audio-visual feature) = 784 (visual feature) + 512 (audio feature)
+        self.audionet_convlayer1 = unet_conv(input_nc, 64)
+        self.audionet_convlayer2 = unet_conv(64, 128)
+        self.audionet_convlayer3 = unet_conv(128, 256)
+        self.audionet_convlayer4 = unet_conv(256, 512)
+        self.audionet_convlayer5 = unet_conv(512, 512)
+
+        self.audionet_upconvlayer1 = unet_upconv(1024, ngf * 8) 
         self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf *4)
         self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf * 2)
         self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf)
         self.audionet_upconvlayer5 = unet_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
-        self.conv1x1 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
+        self.conv1x1 = create_conv(256, 64, 1, 0) #reduce dimension of extracted visual features
 
 
     def forward(self, x, visual_feat):
