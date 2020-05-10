@@ -102,7 +102,7 @@ class CustomDataset(torch.utils.data.Dataset):
             'frame': frame,
             'frame_cropped': frame_cropped,
             'mix_mag': audio_mix_mag,
-            'gt_mask': audio_cropped_mag
+            'gt_mask': gt_mask
         }
         return data
 
