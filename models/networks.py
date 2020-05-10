@@ -22,10 +22,9 @@ def create_upconv(input_nc, output_nc, batch_norm=True, dropout=False, outermost
     if batch_norm:
         model.append(nn.BatchNorm2d(output_nc))
     if outermost_activation is None:
-        model.append(outermost_activation)
-    else:
         model.append(nn.LeakyReLU(0.2, True))
-
+    else:
+        model.append(outermost_activation)
     return nn.Sequential(*model)
         
 def create_conv(input_channels, output_channels, kernel=4, paddings=1, stride=2, batch_norm=True, dropout=False, Relu=True):
@@ -97,13 +96,13 @@ class AudioNet(nn.Module):
     def __init__(self, ngf=64, input_nc=1, output_nc=1):
         super(AudioNet, self).__init__()
         #initialize layers
-        self.audionet_convlayer1 = create_conv(1, ngf)
+        self.audionet_convlayer1 = create_conv(input_nc, ngf)
         self.audionet_convlayer2 = create_conv(ngf, ngf * 2)
         self.audionet_convlayer3 = create_conv(ngf * 2, ngf * 4)
         self.audionet_convlayer4 = create_conv(ngf * 4, ngf * 8)
         self.audionet_convlayer5 = create_conv(ngf * 8, ngf * 8)
 
-        self.audionet_upconvlayer = create_upconv(2048, ngf * 8)
+        self.audionet_upconvlayer1 = create_upconv(2048, ngf * 8)
         self.audionet_upconvlayer2 = create_upconv(ngf * 8, ngf *4)
         self.audionet_upconvlayer3 = create_upconv(ngf * 4, ngf * 2)
         self.audionet_upconvlayer4 = create_upconv(ngf * 2, ngf)
@@ -124,7 +123,7 @@ class AudioNet(nn.Module):
         
         audioVisual_feature = torch.cat((visual_feat, audio_conv5feature), dim=1)
         
-        audio_upconv1feature = self.audionet_upconvlayer(audioVisual_feature)
+        audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
         audio_upconv2feature = self.audionet_upconvlayer2(audio_upconv1feature)
         audio_upconv3feature = self.audionet_upconvlayer3(audio_upconv2feature)
         audio_upconv4feature = self.audionet_upconvlayer4(audio_upconv3feature)
