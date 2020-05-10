@@ -69,6 +69,7 @@ class CustomDataset(torch.utils.data.Dataset):
         audio_cropped_mag = torch.FloatTensor(generate_spectrogram(audio[cropped,:])['mag'])
         audio_cropped_mag = audio_cropped_mag[:-1,:]
         gt_mask = audio_cropped_mag / audio_mix_mag
+        gt_mask[torch.isnan(gt_mask)] = 0
         gt_mask.clamp_(0., 5.)
 
         gt_mask = gt_mask.unsqueeze(0)
