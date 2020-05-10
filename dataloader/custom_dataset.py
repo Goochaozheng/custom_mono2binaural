@@ -64,12 +64,15 @@ class CustomDataset(torch.utils.data.Dataset):
 
         #passing the spectrogram of the difference
         audio_mix_mag = torch.FloatTensor(generate_spectrogram(audio[0,:] + audio[1,:])['mag'])
-        audio_mix_mag = audio_mix_mag[:-1,:].unsqueeze(0)
-        audio_mix_mag = torch.log(audio_mix_mag)
+        audio_mix_mag = audio_mix_mag[:-1,:]
+        
         audio_cropped_mag = torch.FloatTensor(generate_spectrogram(audio[cropped,:])['mag'])
+        audio_cropped_mag = audio_cropped_mag[:-1,:]
         gt_mask = audio_cropped_mag / audio_mix_mag
-        gt_mask = gt_mask[:-1,:].unsqueeze(0)
         gt_mask.clamp_(0., 5.)
+
+        gt_mask = gt_mask.unsqueeze(0)
+        audio_mix_mag = torch.log(audio_mix_mag).unsqueeze(0)
 
         #get the frame dir path based on audio path
         path_parts[-1] = path_parts[-1][:-4]

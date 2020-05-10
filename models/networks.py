@@ -21,8 +21,11 @@ def create_upconv(input_nc, output_nc, batch_norm=True, dropout=False, outermost
         model.append(nn.Dropout2d(0.3, True))
     if batch_norm:
         model.append(nn.BatchNorm2d(output_nc))
-    if outermost_activation is not None:
+    if outermost_activation is None:
         model.append(outermost_activation)
+    else:
+        model.append(nn.LeakyReLU(0.2, True))
+
     return nn.Sequential(*model)
         
 def create_conv(input_channels, output_channels, kernel=4, paddings=1, stride=2, batch_norm=True, dropout=False, Relu=True):
@@ -104,7 +107,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer2 = create_upconv(ngf * 8, ngf *4)
         self.audionet_upconvlayer3 = create_upconv(ngf * 4, ngf * 2)
         self.audionet_upconvlayer4 = create_upconv(ngf * 2, ngf)
-        self.audionet_upconvlayer5 = create_upconv(ngf, output_nc, outermost_activation=None)
+        self.audionet_upconvlayer5 = create_upconv(ngf, output_nc, outermost_activation=nn.ReLU(True))
 
 
     def forward(self, x, visual_global, visual_cropped):
