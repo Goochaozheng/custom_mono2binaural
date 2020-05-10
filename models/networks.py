@@ -95,8 +95,7 @@ class VisualNetGlobal(nn.Module):
 class AudioNet(nn.Module):
     def __init__(self, ngf=64, input_nc=1, output_nc=1):
         super(AudioNet, self).__init__()
-        #initialize layers
-        self.audionet_convlayer1 = create_conv(input_nc, ngf)
+        self.audionet_convlayer1 = create_conv(1, ngf)
         self.audionet_convlayer2 = create_conv(ngf, ngf * 2)
         self.audionet_convlayer3 = create_conv(ngf * 2, ngf * 4)
         self.audionet_convlayer4 = create_conv(ngf * 4, ngf * 8)
@@ -106,7 +105,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer2 = create_upconv(ngf * 8, ngf *4)
         self.audionet_upconvlayer3 = create_upconv(ngf * 4, ngf * 2)
         self.audionet_upconvlayer4 = create_upconv(ngf * 2, ngf)
-        self.audionet_upconvlayer5 = create_upconv(ngf, output_nc, outermost_activation=nn.ReLU(True))
+        self.audionet_upconvlayer5 = create_upconv(ngf, 1, outermost_activation=nn.ReLU(True))
 
 
     def forward(self, x, visual_global, visual_cropped):
