@@ -24,17 +24,27 @@ from dataloader.custom_dataset import CustomDataset
 
 def generate_spectrogram(audio):
     spectro = librosa.core.stft(audio, n_fft=512, hop_length=160, win_length=400, center=True)
-    real = np.expand_dims(np.real(spectro), axis=0)
-    imag = np.expand_dims(np.imag(spectro), axis=0)
-    spectro_two_channel = np.concatenate((real, imag), axis=0)
-    return spectro_two_channel
-
+    mag = np.abs(spectro)
+    phase =  np.angle(spectro)
+    # mag_phase = np.concatenate((mag, phase), axis=0)
+    return mag, phase
 
 def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
   rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
   samples = samples * (desired_rms / rms)
   return rms / desired_rms, samples
 
+def frame_normalize(frame):
+    normalize = transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+    return normalize(frame)
+
+def inverse_spectrogram(mag, phase):
+    spec = mag.astype(np.complex) * np.exp(1j*phase)
+    wav = librosa.istft(spec, hop_length=160, win_length=400, center=True, length=samples_per_window)
+    return wav
 
 def main():
     #load test arguments
@@ -82,52 +92,68 @@ def main():
 
         while sliding_window_start + samples_per_window < audio.shape[-1]:
 
+            #########################
+            # Process audio data
+            #########################
             sliding_window_end = sliding_window_start + samples_per_window
             normalizer, audio_segment = audio_normalize(audio[:,sliding_window_start:sliding_window_end])
             audio_segment_channel_left = audio_segment[0,:]
             audio_segment_channel_right = audio_segment[1,:]
             audio_segment_mix = audio_segment_channel_left + audio_segment_channel_right
 
-            data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_left + audio_segment_channel_right)).unsqueeze(0).cuda()
-            #get the frame index for current window
+            audio_mix_mag,  audio_mix_phase = generate_spectrogram(audio_segment_mix)
+            audio_mix_mag = audio_mix_mag[:-1, :]
+            audio_mix_phase = audio_mix_phase[:-1, :]
+            audio_mix_mag = torch.FloatTensor(audio_mix_mag).unsqueeze(0) # add channel dim
+            data['mix_mag'] = torch.log(audio_mix_mag).unsqueeze(0).cuda() # add batch dim
+
+
+            #########################
+            # Process visual data
+            #########################
             frame_index = int(((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * frame_count)
             if frame_index > frame_count: frame_index = frame_count
 
             #Read frame
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
             frame = frame.resize((256,128))
-            data['frame'] = transforms.ToTensor()(frame).unsqueeze(0).cuda()
 
             w, h = frame.size
             frame_left = frame.crop((0,0,w/2,h))
             frame_right = frame.crop((w/2,0,w,h))
 
-            # generate left cahnnel
+            frame = transforms.ToTensor()(frame)
+            frame = frame_normalize(frame)
+            data['frame'] = frame.unsqueeze(0).cuda()
+
+
+            #########################
+            # Generate prediction
+            #########################
+            frame_left = frame_normalize(frame_left)
             data['frame_cropped'] = transforms.ToTensor()(frame_left).unsqueeze(0).cuda()
             data['audio_cropped'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_left)).unsqueeze(0).cuda()
             with torch.no_grad():
                 output = model.forward(data)
-            predicted_spectrogram_left = output[0,:,:,:].data[:].cpu().numpy()
-            loss = loss_criterion(output, data['audio_cropped'][:,:,:-1,:].cuda())
-            total_loss = total_loss + loss
-            count = count + 1
+            predicted_mask_left = output[0,:,:,:].data[:].cpu().numpy()
 
             # generate right cahnnel
+            frame_right = frame_normalize(frame_right)
             data['frame_cropped'] = transforms.ToTensor()(frame_right).unsqueeze(0).cuda()
             data['audio_cropped'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_right)).unsqueeze(0).cuda()
             with torch.no_grad():
                 output = model.forward(data)
-            predicted_spectrogram_right = output[0,:,:,:].data[:].cpu().numpy()
-            loss = loss_criterion(output, data['audio_cropped'][:,:,:-1,:].cuda())
-            total_loss = total_loss + loss
-            count = count + 1
+            predicted_mask_right = output[0,:,:,:].data[:].cpu().numpy()
 
-            #ISTFT to convert back to audio
-            reconstructed_stft_left = predicted_spectrogram_left[0,:,:] + (1j * predicted_spectrogram_left[1,:,:])
-            reconstructed_signal_left = librosa.istft(reconstructed_stft_left, hop_length=160, win_length=400, center=True, length=samples_per_window)
 
-            reconstructed_stft_right = predicted_spectrogram_right[0,:,:] + (1j * predicted_spectrogram_right[1,:,:])
-            reconstructed_signal_right = librosa.istft(reconstructed_stft_right, hop_length=160, win_length=400, center=True, length=samples_per_window)
+            #########################
+            # Mask to wav
+            #########################
+            pred_mag_left = audio_mix_mag[0] * predicted_mask_left[0]
+            reconstructed_signal_left = inverse_spectrogram(pred_mag_left, audio_mix_phase)
+
+            pred_mag_right = audio_mix_mag[0] * predicted_mask_right[0]
+            reconstructed_signal_right = inverse_spectrogram(pred_mag_right, audio_mix_phase)
 
             reconstructed_binaural = np.concatenate((np.expand_dims(reconstructed_signal_left, axis=0), np.expand_dims(reconstructed_signal_right, axis=0)), axis=0) 
             # inverse normalization
@@ -138,11 +164,18 @@ def main():
             #move to next window
             sliding_window_start = sliding_window_start + int(opt.hop_size * opt.audio_sampling_rate)
 
+
         #deal with the last segment
         normalizer, audio_segment = audio_normalize(audio[:,-samples_per_window:])
         audio_segment_channel_left = audio_segment[0,:]
         audio_segment_channel_right = audio_segment[1,:]
-        data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_left + audio_segment_channel_right)).unsqueeze(0).cuda()
+        audio_segment_mix = audio_segment_channel_left + audio_segment_channel_right
+
+        audio_mix_mag,  audio_mix_phase = generate_spectrogram(audio_segment_mix)
+        audio_mix_mag = audio_mix_mag[:-1, :]
+        audio_mix_phase = audio_mix_phase[:-1, :]
+        audio_mix_mag = torch.FloatTensor(audio_mix_mag).unsqueeze(0) # add channel dim
+        data['mix_mag'] = torch.log(audio_mix_mag).unsqueeze(0).cuda() # add batch dim
         
         frame_index = int(round((opt.input_audio_length - opt.audio_length / 2.0) * 10))
         if frame_index > frame_count: frame_index = frame_count
@@ -153,39 +186,35 @@ def main():
             os.mkdir(os.path.join(opt.output_dir_root, audio_name))
         #save sample image
         frame.save(os.path.join(opt.output_dir_root, audio_name, 'sample_image.png'))
-        frame = frame.resize((256,128))
-        data['frame'] = transforms.ToTensor()(frame).unsqueeze(0).cuda()
 
+        frame = frame.resize((256,128))
         w, h = frame.size
         frame_left = frame.crop((0,0,w/2,h))
         frame_right = frame.crop((w/2,0,w,h))
 
-        # generate left cahnnel
+        frame = transforms.ToTensor()(frame)
+        frame = frame_normalize(frame)
+        data['frame'] = frame.unsqueeze(0).cuda()
+
+        frame_left = frame_normalize(frame_left)
         data['frame_cropped'] = transforms.ToTensor()(frame_left).unsqueeze(0).cuda()
         data['audio_cropped'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_left)).unsqueeze(0).cuda()
         with torch.no_grad():
             output = model.forward(data)
-        predicted_spectrogram_left = output[0,:,:,:].data[:].cpu().numpy()
-        loss = loss_criterion(output, data['audio_cropped'][:,:,:-1,:].cuda())
-        total_loss = total_loss + loss
-        count = count + 1
+        predicted_mask_left = output[0,:,:,:].data[:].cpu().numpy()
 
-        # generate right cahnnel
+        frame_right = frame_normalize(frame_right)
         data['frame_cropped'] = transforms.ToTensor()(frame_right).unsqueeze(0).cuda()
         data['audio_cropped'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel_right)).unsqueeze(0).cuda()
         with torch.no_grad():
             output = model.forward(data)
-        predicted_spectrogram_right = output[0,:,:,:].data[:].cpu().numpy()
-        loss = loss_criterion(output, data['audio_cropped'][:,:,:-1,:].cuda())
-        total_loss = total_loss + loss
-        count = count + 1
+        predicted_mask_right = output[0,:,:,:].data[:].cpu().numpy()
 
-        #ISTFT to convert back to audio
-        reconstructed_stft_left = predicted_spectrogram_left[0,:,:] + (1j * predicted_spectrogram_left[1,:,:])
-        reconstructed_signal_left = librosa.istft(reconstructed_stft_left, hop_length=160, win_length=400, center=True, length=samples_per_window)
+        pred_mag_left = audio_mix_mag[0] * predicted_mask_left[0]
+        reconstructed_signal_left = inverse_spectrogram(pred_mag_left, audio_mix_phase)
 
-        reconstructed_stft_right = predicted_spectrogram_right[0,:,:] + (1j * predicted_spectrogram_right[1,:,:])
-        reconstructed_signal_right = librosa.istft(reconstructed_stft_right, hop_length=160, win_length=400, center=True, length=samples_per_window)
+        pred_mag_right = audio_mix_mag[0] * predicted_mask_right[0]
+        reconstructed_signal_right = inverse_spectrogram(pred_mag_right, audio_mix_phase)
 
         reconstructed_binaural = np.concatenate((np.expand_dims(reconstructed_signal_left, axis=0), np.expand_dims(reconstructed_signal_right, axis=0)), axis=0) * normalizer
 
@@ -195,8 +224,6 @@ def main():
 
         #divide aggregated predicted audio by their corresponding counts
         predicted_binaural_audio = np.divide(binaural_audio, overlap_count)
-
-        print('Loss:%f' % (total_loss/count))
 
         mixed_mono = (audio_channel1 + audio_channel2) / 2
 
