@@ -30,9 +30,9 @@ def generate_spectrogram(audio):
     return mag, phase
 
 def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
-  rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
-  samples = samples * (desired_rms / rms)
-  return rms / desired_rms, samples
+    rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
+    samples = samples * (desired_rms / rms)
+    return rms / desired_rms, samples
 
 def frame_normalize(frame):
     normalize = transforms.Normalize(
