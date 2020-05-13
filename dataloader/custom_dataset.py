@@ -57,7 +57,7 @@ class CustomDataset(torch.utils.data.Dataset):
         audio_start = int(audio_start_time * self.opt.audio_sampling_rate)
         audio_end = audio_start + int(self.opt.audio_length * self.opt.audio_sampling_rate)
         audio = audio[:, audio_start:audio_end]
-        audio = normalize(audio)
+        audio = audio_normalize(audio)
         audio_channel1 = audio[0,:]
         audio_channel2 = audio[1,:]
 
