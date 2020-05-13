@@ -94,10 +94,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer2 = unet_upconv(ngf*24, ngf*4)
         self.audionet_upconvlayer3 = unet_upconv(ngf*12, ngf*2)
         self.audionet_upconvlayer4 = unet_upconv(ngf*6, ngf)
-        self.audionet_upconvlayer5 = unet_upconv(ngf*3, output_nc, True) #outermost layer use a sigmoid to bound the mask
-
-        # self.conv1x1 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
-        # channel#: 512 -> 8
+        self.audionet_upconvlayer5 = unet_upconv(ngf*3, output_nc, True)
         
         #Visual reshape
         # self.visual_pooling = nn.AdaptiveAvgPool2d((8,2))

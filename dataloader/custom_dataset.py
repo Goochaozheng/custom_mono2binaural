@@ -15,10 +15,17 @@ def generate_spectrogram(audio):
     spectro_two_channel = np.concatenate((real, imag), axis=0)
     return spectro_two_channel
 
-def normalize(samples, desired_rms = 0.1, eps = 1e-4):
-  rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
-  samples = samples * (desired_rms / rms)
-  return samples
+def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
+    rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
+    samples = samples * (desired_rms / rms)
+    return samples
+
+def visual_normalize(frame)
+    norm = transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+    return norm(frame)
 
 class CustomDataset(torch.utils.data.Dataset):
 
@@ -67,6 +74,7 @@ class CustomDataset(torch.utils.data.Dataset):
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
         frame = frame.resize((256,128))
         frame = transforms.ToTensor()(frame)
+        frame = visual_normalize(frame)
 
         data = {
             # 'visual_feature': visual_feature,
