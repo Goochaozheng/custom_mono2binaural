@@ -20,7 +20,7 @@ def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
     samples = samples * (desired_rms / rms)
     return samples
 
-def visual_normalize(frame)
+def visual_normalize(frame):
     norm = transforms.Normalize(
         mean=[0.485, 0.456, 0.406],
         std=[0.229, 0.224, 0.225]
