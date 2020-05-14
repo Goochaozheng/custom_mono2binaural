@@ -85,7 +85,9 @@ class AudioNet(nn.Module):
         del resnet
         del layers
 
-        # channel number
+        #Visual reshape
+        # self.visual_pooling = nn.AdaptiveAvgPool2d((8,2))
+        self.visual_conv = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=(2,1), stride=(2,1), padding=0)
         #1024 = 512 (visual feature) + 512 (audio feature)
         self.audionet_upconvlayer1 = unet_upconv(1024, ngf*8) 
         self.audionet_upconvlayer2 = unet_upconv(ngf*24, ngf*4)
@@ -93,10 +95,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer4 = unet_upconv(ngf*6, ngf)
         self.audionet_upconvlayer5 = unet_upconv(ngf*3, output_nc, True)
         
-        #Visual reshape
-        # self.visual_pooling = nn.AdaptiveAvgPool2d((8,2))
-        self.visual_conv = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=(2,1), stride=(2,1), padding=0)
-
+        
     def get_audio_layers(self):
         return [
             self.audionet_convlayer1,
@@ -108,7 +107,6 @@ class AudioNet(nn.Module):
 
     def get_visual_layers(self):
         return [
-            self.visual_conv,
             self.residual_block1,
             self.residual_block2,
             self.residual_block3,
@@ -117,6 +115,7 @@ class AudioNet(nn.Module):
 
     def get_gen_layers(self):
         return [
+            self.visual_conv,
             self.audionet_upconvlayer1,
             self.audionet_upconvlayer2,
             self.audionet_upconvlayer3,
