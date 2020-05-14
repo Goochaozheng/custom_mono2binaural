@@ -29,7 +29,7 @@ def unet_upconv(input_nc, output_nc, outermost=False, norm_layer=nn.BatchNorm2d)
     if not outermost:
         return nn.Sequential(*[upconv, upnorm, dropout, uprelu])
     else:
-        return nn.Sequential(*[upconv, nn.Tanh()])
+        return nn.Sequential(*[upconv, nn.Sigmoid()])
         
 def create_conv(input_channels, output_channels, kernel, paddings, batch_norm=True, Relu=True, stride=1):
     model = [nn.Conv2d(input_channels, output_channels, kernel, stride = stride, padding = paddings)]
@@ -95,7 +95,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer4 = unet_upconv(ngf*6, ngf)
         self.audionet_upconvlayer5 = unet_upconv(ngf*3, output_nc, True)
         
-        
+
     def get_audio_layers(self):
         return [
             self.audionet_convlayer1,
@@ -174,6 +174,6 @@ class AudioNet(nn.Module):
         mask_prediction = self.audionet_upconvlayer5(torch.cat((
             audio_upconv4feature, 
             audio_conv1feature,
-            video_res1feature), dim=1))
+            video_res1feature), dim=1)) * 2 - 1
 
         return mask_prediction
