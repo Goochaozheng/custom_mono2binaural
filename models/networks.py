@@ -29,7 +29,7 @@ def unet_upconv(input_nc, output_nc, outermost=False, norm_layer=nn.BatchNorm2d)
     if not outermost:
         return nn.Sequential(*[upconv, upnorm, dropout, uprelu])
     else:
-        return upconv
+        return nn.Sequential(*[upconv, nn.Tanh()])
         
 def create_conv(input_channels, output_channels, kernel, paddings, batch_norm=True, Relu=True, stride=1):
     model = [nn.Conv2d(input_channels, output_channels, kernel, stride = stride, padding = paddings)]
@@ -85,9 +85,6 @@ class AudioNet(nn.Module):
         del resnet
         del layers
 
-        #1296 (audio-visual feature) = 784 (visual feature) + 512 (audio feature)
-        # self.audionet_upconvlayer1 = unet_upconv(1296, ngf * 8) 
-
         # channel number
         #1024 = 512 (visual feature) + 512 (audio feature)
         self.audionet_upconvlayer1 = unet_upconv(1024, ngf*8) 
@@ -106,20 +103,25 @@ class AudioNet(nn.Module):
             self.audionet_convlayer2,
             self.audionet_convlayer3,
             self.audionet_convlayer4,
-            self.audionet_convlayer5,
-            self.audionet_upconvlayer1,
-            self.audionet_upconvlayer2,
-            self.audionet_upconvlayer3,
-            self.audionet_upconvlayer4,
-            self.audionet_upconvlayer5,
+            self.audionet_convlayer5
         ]
 
     def get_visual_layers(self):
         return [
+            self.visual_conv,
             self.residual_block1,
             self.residual_block2,
             self.residual_block3,
             self.residual_block4,
+        ]
+
+    def get_gen_layers(self):
+        return [
+            self.audionet_upconvlayer1,
+            self.audionet_upconvlayer2,
+            self.audionet_upconvlayer3,
+            self.audionet_upconvlayer4,
+            self.audionet_upconvlayer5
         ]
 
     def forward(self, audio_spec, visual_frame):
@@ -170,9 +172,9 @@ class AudioNet(nn.Module):
         # sigmoid output [0,1], map to [-1,1] 
         video_res1feature = video_res1feature.transpose(2,3) 
         video_res1feature = video_res1feature.repeat(1,1,2,1)
-        diff_prediction = self.audionet_upconvlayer5(torch.cat((
+        mask_prediction = self.audionet_upconvlayer5(torch.cat((
             audio_upconv4feature, 
             audio_conv1feature,
             video_res1feature), dim=1))
 
-        return diff_prediction
+        return mask_prediction
