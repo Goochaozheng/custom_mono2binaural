@@ -80,7 +80,7 @@ class CustomDataset(torch.utils.data.Dataset):
         path_parts[-2] = 'flow'
         flow_path = '/'.join(path_parts)
         flow = Image.open(os.path.join(flow_path, str(frame_index).zfill(6) + '.png'))
-        flow = transforms.ToTensor()(frame)
+        flow = transforms.ToTensor()(flow)
 
         data = {
             'frame': frame,
