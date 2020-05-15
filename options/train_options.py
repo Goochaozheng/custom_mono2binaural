@@ -32,8 +32,8 @@ class TrainOptions(BaseOptions):
 
 		#optimizer arguments
 		self.parser.add_argument('--lr_visual', type=float, default=0.0001, help='learning rate for visual stream')
-		self.parser.add_argument('--lr_audio', type=float, default=0.001, help='learning rate for audio stream')
-		self.parser.add_argument('--lr_gen', type=float, default=0.001, help='learning rate for generative net')
+		self.parser.add_argument('--lr_flow', type=float, default=0.001, help='learning rate for flow stream')
+		self.parser.add_argument('--lr_audio', type=float, default=0.001, help='learning rate for generative net')
 		self.parser.add_argument('--optimizer', default='adam', type=str, help='adam or sgd for optimization')
 		self.parser.add_argument('--beta1', default=0.9, type=float, help='momentum for sgd, beta1 for adam')
 		self.parser.add_argument('--weight_decay', default=0.0005, type=float, help='weights regularizer')

@@ -17,6 +17,7 @@ import statistics as stat
 
 def normalize(samples):
     return samples / np.maximum(1e-20, np.max(np.abs(samples)))
+    
 
 def STFT_L2_distance(predicted_binaural, gt_binaural):
     #channel1

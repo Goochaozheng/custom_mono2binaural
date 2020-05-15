@@ -15,10 +15,17 @@ def generate_spectrogram(audio):
     spectro_two_channel = np.concatenate((real, imag), axis=0)
     return spectro_two_channel
 
-def normalize(samples, desired_rms = 0.1, eps = 1e-4):
-  rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
-  samples = samples * (desired_rms / rms)
-  return samples
+def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
+    rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
+    samples = samples * (desired_rms / rms)
+    return samples
+
+def visual_normalize(frame):
+    norm = transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+    return norm(frame)
 
 class CustomDataset(torch.utils.data.Dataset):
 
@@ -50,7 +57,7 @@ class CustomDataset(torch.utils.data.Dataset):
         audio_start = int(audio_start_time * self.opt.audio_sampling_rate)
         audio_end = audio_start + int(self.opt.audio_length * self.opt.audio_sampling_rate)
         audio = audio[:, audio_start:audio_end]
-        audio = normalize(audio)
+        audio = audio_normalize(audio)
         audio_channel1 = audio[0,:]
         audio_channel2 = audio[1,:]
 
@@ -63,14 +70,21 @@ class CustomDataset(torch.utils.data.Dataset):
         path_parts[-2] = 'frames'
         frame_path = '/'.join(path_parts)
 
-        frame_index = int(round(((audio_start_time + audio_end_time) / 2.0 + 0.05) * 10))  #10 frames extracted per second
+        frame_index = int(round(((audio_start_time + audio_end_time) / 2.0) * 10))  #10 frames extracted per second
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
         frame = frame.resize((256,128))
         frame = transforms.ToTensor()(frame)
+        frame = visual_normalize(frame)
+
+        #get flow
+        path_parts[-2] = 'flow'
+        flow_path = '/'.join(path_parts)
+        flow = Image.open(os.path.join(flow_path, str(frame_index).zfill(6) + '.png'))
+        flow = transforms.ToTensor()(frame)
 
         data = {
-            # 'visual_feature': visual_feature,
             'frame': frame,
+            'flow': flow,
             'audio_mix': audio_mix_spec,
             'audio_diff': audio_diff_spec
         }
