@@ -54,11 +54,11 @@ def weights_init(m):
 class FlowNet(nn.Module):
     def __init__(self):
         super(FlowNet, self).__init__()
-        self.flow_conv1 = create_conv(3, 32)
-        self.flow_conv2 = create_conv(16, 64)
-        self.flow_conv3 = create_conv(64, 128)
-        self.flow_conv4 = create_conv(128, 256)
-        self.flow_conv5 = create_conv(256, 512)
+        self.flow_conv1 = create_conv(3, 16)
+        self.flow_conv2 = create_conv(16, 32)
+        self.flow_conv3 = create_conv(32, 64)
+        self.flow_conv4 = create_conv(64, 128)
+        self.flow_conv5 = create_conv(128, 256)
 
     def forward(self, flow):
         flow_feature = self.flow_conv1(flow)
@@ -100,7 +100,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer5 = create_upconv(ngf * 2, output_nc, Relu=False) #outermost layer use a sigmoid to bound the mask
         
         self.conv1x1_visual = create_conv(512, 8, kernel=1, stride=1, paddings=0) 
-        self.conv1x1_flow = create_conv(512, 8, kernel=1, stride=1, paddings=0)
+        self.conv1x1_flow = create_conv(256, 8, kernel=1, stride=1, paddings=0)
 
     def forward(self, audio, visual_feat, flow_feat):
         audio_conv1feature = self.audionet_convlayer1(audio)
