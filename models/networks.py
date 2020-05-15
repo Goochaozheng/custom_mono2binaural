@@ -14,7 +14,7 @@ import functools
 import torchvision
 
 def create_upconv(input_channels, output_channels, kernel=4, paddings=1, stride=2, batch_norm=True, dropout=False, Relu=True):
-    model = [nn.ConvTranspose2d(input_nc, output_nc, kernel_size=kernel, stride=2, padding=1)]
+    model = [nn.ConvTranspose2d(input_channels, output_channels, kernel_size=kernel, stride=2, padding=1)]
     if(dropout):
         model.append(nn.Dropout2d(0.3, True))
     if(batch_norm):
