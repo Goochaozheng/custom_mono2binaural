@@ -72,7 +72,7 @@ class AudioNet(nn.Module):
         self.audionet_convlayer3 = unet_conv(ngf * 2, ngf * 4)
         self.audionet_convlayer4 = unet_conv(ngf * 4, ngf * 8)
         self.audionet_convlayer5 = unet_conv(ngf * 8, ngf * 8)
-        self.audionet_upconvlayer1 = unet_upconv(1296, ngf * 8) #1296 (audio-visual feature) = 784 (visual feature) + 512 (audio feature)
+        self.audionet_upconvlayer1 = unet_upconv(768, ngf * 8) #1296 (audio-visual feature) = 256 (visual feature) + 512 (audio feature)
         self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf *4)
         self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf * 2)
         self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf)

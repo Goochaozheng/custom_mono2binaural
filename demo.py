@@ -98,7 +98,7 @@ def main():
 
             #Read frame
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-			frame = frame.resize((448,224))
+			frame = frame.resize((256,128))
             frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
 			frame = frame.to(device)
 			data['frame'] = frame
@@ -139,7 +139,7 @@ def main():
         frame_index = int(round((opt.input_audio_length - opt.audio_length / 2.0) * 10))
 		if frame_index > frame_count: frame_index = frame_count
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-		frame = frame.resize((448,224))
+		frame = frame.resize((256,128))
 
         #check output directory
         if not os.path.isdir(os.path.join(opt.output_dir_root, audio_name)):
