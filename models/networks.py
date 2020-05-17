@@ -67,31 +67,33 @@ def merge_visual_feature(visual_feature_left, visual_feature_right):
 class VisualNet(nn.Module):
     def __init__(self):
         super(VisualNet, self).__init__()
-        
-        self.visual_conv_1 = unet_conv(3, 32)
-        self.visual_conv_2 = unet_conv(32, 64)
-        self.visual_conv_3 = unet_conv(64, 128)
-        self.visual_conv_4 = unet_conv(128, 256)
-        self.visual_conv_5 = unet_conv(256, 512)
-        self.visual_conv_6 = create_conv(512, 128, kernel=2, stride=2, paddings=0)
+        original_resnet = torchvision.models.resnet18(pretrained=True)
+        layers = list(original_resnet.children())[0:-2]
+        self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
 
     def forward(self, frame):
+        visual_feature = self.feature_extraction(frame)
+        return visual_feature
 
-        visual_feature = self.visual_conv_1(frame)
-        visual_feature = self.visual_conv_2(visual_feature)
-        visual_feature = self.visual_conv_3(visual_feature)
-        visual_feature = self.visual_conv_4(visual_feature)
-        visual_feature = self.visual_conv_5(visual_feature)
-        visual_feature = self.visual_conv_6(visual_feature)
 
+class VisualFusion(nn.Module):
+    def __init__(self):
+        super(VisualFusion, self).__init__()
+        self.visual_fusion1 = create_conv(1024, 512, kernel=1, stride=1, paddings=0)
+        self.visual_fusion2 = create_conv(512, 256, kernel=1, stride=1, paddings=0)
+        self.visual_fusion3 = create_conv(256, 64, kernel=1, stride=1, paddings=0)
+
+    def forward(self, visual_feature_left, visual_feature_right):
+        visual_feature = torch.cat((visual_feature_left, visual_feature_right), dim=1)
+        visual_feature = self.visual_fusion1(visual_feature)
+        visual_feature = self.visual_fusion2(visual_feature)
+        visual_feature = self.visual_fusion3(visual_feature)
         return visual_feature
 
 # U-Net
 class AudioNet(nn.Module):
     def __init__(self, ngf=64, input_nc=2, output_nc=2):
         super(AudioNet, self).__init__()
-
-        self.visual_fusion = create_conv(1024, 512, kernel=1, stride=1, paddings=0)
 
         #initialize layers
         self.audionet_convlayer1 = unet_conv(input_nc, ngf)
@@ -100,31 +102,27 @@ class AudioNet(nn.Module):
         self.audionet_convlayer4 = unet_conv(ngf * 4, ngf * 8)
         self.audionet_convlayer5 = unet_conv(ngf * 8, ngf * 8)
 
-        self.audionet_upconvlayer1 = unet_upconv(1024, ngf * 8) 
-        self.audionet_upconvlayer2 = unet_upconv(ngf * 8, ngf *4)
-        self.audionet_upconvlayer3 = unet_upconv(ngf * 4, ngf * 2)
-        self.audionet_upconvlayer4 = unet_upconv(ngf * 2, ngf)
-        self.audionet_upconvlayer5 = unet_upconv(ngf, output_nc, True) #outermost layer use a sigmoid to bound the mask
+        self.audionet_upconvlayer1 = unet_upconv(1536, ngf * 8) 
+        self.audionet_upconvlayer2 = unet_upconv(ngf * 16, ngf *4)
+        self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf * 2)
+        self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf)
+        self.audionet_upconvlayer5 = unet_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
         
-    def forward(self, audio_spec, visual_feature_left, visual_feature_right):
+    def forward(self, audio_spec, visual_feature):
         audio_conv1feature = self.audionet_convlayer1(audio_spec)
         audio_conv2feature = self.audionet_convlayer2(audio_conv1feature)
         audio_conv3feature = self.audionet_convlayer3(audio_conv2feature)
         audio_conv4feature = self.audionet_convlayer4(audio_conv3feature)
         audio_conv5feature = self.audionet_convlayer5(audio_conv4feature)
 
-        visual_feature_left = visual_feature_left.view(visual_feature_left.shape[0], -1 ,1, 1)
-        visual_feature_right = visual_feature_right.view(visual_feature_right.shape[0], -1 ,1, 1)
-        visual_feature = torch.cat((visual_feature_left, visual_feature_right), dim=1)
+        visual_feature = visual_feature.view(visual_feature.shape[0], -1, 1, 1)
         visual_feature = visual_feature.repeat(1,1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1])
-        visual_feature = self.visual_fusion(visual_feature)
-        
         audioVisual_feature = torch.cat((visual_feature, audio_conv5feature), dim=1)
         
         audio_upconv1feature = self.audionet_upconvlayer1(audioVisual_feature)
-        audio_upconv2feature = self.audionet_upconvlayer2(audio_upconv1feature)
-        audio_upconv3feature = self.audionet_upconvlayer3(audio_upconv2feature)
-        audio_upconv4feature = self.audionet_upconvlayer4(audio_upconv3feature)
-        mask_prediction = self.audionet_upconvlayer5(audio_upconv4feature) * 2 - 1
+        audio_upconv2feature = self.audionet_upconvlayer2(torch.cat((audio_upconv1feature, audio_conv4feature), dim=1))
+        audio_upconv3feature = self.audionet_upconvlayer3(torch.cat((audio_upconv2feature, audio_conv3feature), dim=1))
+        audio_upconv4feature = self.audionet_upconvlayer4(torch.cat((audio_upconv3feature, audio_conv2feature), dim=1))
+        mask_prediction = self.audionet_upconvlayer5(torch.cat((audio_upconv4feature, audio_conv1feature), dim=1)) * 2 - 1
 
         return mask_prediction
