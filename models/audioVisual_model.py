@@ -31,22 +31,22 @@ class AudioVisualModel(torch.nn.Module):
             output_nc=opt.unet_output_nc
         )
         self.visual_extract = networks.VisualNet()
-        
-        self.visual_extract.apply(networks.weights_init)
+        self.visual_fusion = networks.VisualFusion()
+
+        # self.visual_extract.apply(networks.weights_init)
+        self.visual_fusion.apply(networks.weights_init)
         self.u_net.apply(networks.weights_init)
         
     def forward(self, input, volatile=False):
-        # frame = input['frame'].cuda()
         audio_mix = input['audio_mix'].cuda()
         frame_l = input['frame_left'].cuda()
         frame_r = input['frame_right'].cuda()
 
         visual_feature_left = self.visual_extract(frame_l)
         visual_feature_right = self.visual_extract(frame_r)
-        mask_prediction = self.u_net(audio_mix, visual_feature_left, visual_feature_right) # U-Net
+        visual_feature = self.visual_fusion(visual_feature_left, visual_feature_right)
+        mask_prediction = self.u_net(audio_mix, visual_feature) # U-Net
 
-        # complex masking to obtain the predicted spectrogram by complex multiplying (a+bi)(b+ci) = (ac-bd)+(bc+ad)i
-        # mask_prediction (, 2, 256, 64)
         spectrogram_diff_real = audio_mix[:,0,:-1,:] * mask_prediction[:,0,:,:] - audio_mix[:,1,:-1,:] * mask_prediction[:,1,:,:]
         spectrogram_diff_img = audio_mix[:,0,:-1,:] * mask_prediction[:,1,:,:] + audio_mix[:,1,:-1,:] * mask_prediction[:,0,:,:]
         
