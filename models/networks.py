@@ -54,9 +54,8 @@ def weights_init(m):
 class VisualNet(nn.Module):
     def __init__(self):
         super(VisualNet, self).__init__()
-        original_resnet = torchvision.models.resnet18(pretrained=True)
-        layers = list(original_resnet.children())[0:-2]
-        self.feature_extraction = nn.Sequential(*layers) #features before conv1x1
+        vgg = torchvision.models.vgg16_bn(pretrained=True)
+        self.feature_extraction = list(vgg.children())[0]
 
     def forward(self, x):
         x = self.feature_extraction(x)
