@@ -94,15 +94,15 @@ class AudioNet(nn.Module):
         visual_feat5 = self.visual_fusion5(visual_feat)
         visual_feat5 = visual_feat5.view(visual_feat5.shape[0], -1, 1, 1) #flatten visual feature
         visual_feat5 = visual_feat5.repeat(1, 1, audio_conv5feature.shape[-2], audio_conv5feature.shape[-1]) #tile visual feature
-        audio_upconv1feature = self.audionet_upconvlayer1(torch.cat((visual_feat5, audio_conv5feature), dim=1))
+        audio_upconv1feature = self.audionet_upconvlayer1(torch.cat((audio_conv5feature, visual_feat5), dim=1))
 
         visual_feat4 = self.visual_fusion4(visual_feat)
-        visual_feat4 = visual_feat4.view(visual_feat.shape[0], -1, 1, 1) #flatten visual feature
+        visual_feat4 = visual_feat4.view(visual_feat4.shape[0], -1, 1, 1) #flatten visual feature
         visual_feat4 = visual_feat4.repeat(1, 1, audio_conv4feature.shape[-2], audio_conv4feature.shape[-1]) #tile visual feature
         audio_upconv2feature = self.audionet_upconvlayer2(torch.cat((audio_upconv1feature, audio_conv4feature, visual_feat4), dim=1))
 
         visual_feat3 = self.visual_fusion3(visual_feat)
-        visual_feat3 = visual_feat3.view(visual_feat.shape[0], -1, 1, 1) #flatten visual feature
+        visual_feat3 = visual_feat3.view(visual_feat3.shape[0], -1, 1, 1) #flatten visual feature
         visual_feat3 = visual_feat3.repeat(1, 1, audio_conv3feature.shape[-2], audio_conv3feature.shape[-1]) #tile visual feature        
         audio_upconv3feature = self.audionet_upconvlayer3(torch.cat((audio_upconv2feature, audio_conv3feature, visual_feat3), dim=1))
 
