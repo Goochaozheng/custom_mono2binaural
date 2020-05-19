@@ -50,13 +50,14 @@ def main():
     data_source = h5py.File(opt.data_path)
     audio_source = h5py.File(opt.input_audio_path)
 
-    for index in range(len(data_source['audio'])):
+    total_loss = 0
+    count = 0
+
+    for index in tqdm(range(len(data_source['audio'])), ascii=True):
 
         path_parts = data_source['audio'][index].decode().strip().split('\\')
         audio_name = path_parts[-1][:-4]
         audio_index = int(audio_name) - 1
-
-        print("Processing audio: %s (%d out of %d)" % (audio_name, index, len(data_source['audio'])))
 
         #load the audio to perform separation
         audio = audio_source['audio'][audio_index]
@@ -64,8 +65,8 @@ def main():
         audio_channel2 = audio[1,:]
 
         #load video 
-        frame_path = "H:\\FAIR-Play\\FAIR-Play\\frames\\" + audio_name
-		frame_count = len(os.listdir(frame_path))
+        frame_path = opt.input_frame_path + audio_name
+        frame_count = len(os.listdir(frame_path))
 
         #define the transformation to perform on visual frames
         vision_transform_list = [transforms.Resize((128,256)), transforms.ToTensor()]
@@ -80,8 +81,6 @@ def main():
         sliding_window_start = 0
         data = {}
         samples_per_window = int(opt.audio_length * opt.audio_sampling_rate)
-        total_loss = 0
-        count = 0
 
         while sliding_window_start + samples_per_window < audio.shape[-1]:
 
@@ -95,24 +94,23 @@ def main():
             data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
             #get the frame index for current window
             frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * 10)
+            if frame_index > frame_count: frame_index = frame_count
 
             #Read frame
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-			frame = frame.resize((256,128))
+            frame = frame.resize((256,128))
             frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
-			frame = frame.to(device)
-			data['frame'] = frame
+            frame = frame.to(device)
+            data['frame'] = frame
 
             with torch.no_grad():
                 output = model.forward(data)
 
-			predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+            predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
             # display test err
             loss_criterion = torch.nn.MSELoss()
             loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:].cuda())
-            total_loss = total_loss + loss
-            count = count + 1
 
             #ISTFT to convert back to audio
             reconstructed_stft_diff = predicted_spectrogram[0,:,:] + (1j * predicted_spectrogram[1,:,:])
@@ -137,9 +135,9 @@ def main():
         #get the frame index for last window
         
         frame_index = int(round((opt.input_audio_length - opt.audio_length / 2.0) * 10))
-		if frame_index > frame_count: frame_index = frame_count
+        if frame_index > frame_count: frame_index = frame_count
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-		frame = frame.resize((256,128))
+        frame = frame.resize((256,128))
 
         #check output directory
         if not os.path.isdir(os.path.join(opt.output_dir_root, audio_name)):
@@ -147,14 +145,14 @@ def main():
         #save sample image
         frame.save(os.path.join(opt.output_dir_root, audio_name, 'sample_image.png'))
         frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
-	
-		frame = frame.to(device)
-		data['frame'] = frame
+    
+        frame = frame.to(device)
+        data['frame'] = frame
 
         with torch.no_grad():
             output = model.forward(data)
 
-		predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+        predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
         #ISTFT to convert back to audio
         reconstructed_stft_diff = predicted_spectrogram[0,:,:] + (1j * predicted_spectrogram[1,:,:])
@@ -170,14 +168,16 @@ def main():
         #divide aggregated predicted audio by their corresponding counts
         predicted_binaural_audio = np.divide(binaural_audio, overlap_count)
 
-        print('Loss:%f' % (total_loss/count))
-
+        total_loss = total_loss + loss
+        count = count + 1
+        
         mixed_mono = (audio_channel1 + audio_channel2) / 2
 
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'mixed_mono.wav'), mixed_mono, sr=opt.audio_sampling_rate)
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'input_binaural.wav'), audio, sr=opt.audio_sampling_rate)
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'predicted_binaural.wav'), predicted_binaural_audio, sr=opt.audio_sampling_rate)
 
+    print('Loss:%f' % (total_loss/count))
 
 if __name__ == '__main__':
     main()
