@@ -66,7 +66,7 @@ def main():
 
         #load video 
         frame_path = opt.input_frame_path + audio_name
-		frame_count = len(os.listdir(frame_path))
+        frame_count = len(os.listdir(frame_path))
 
         #define the transformation to perform on visual frames
         vision_transform_list = [transforms.Resize((128,256)), transforms.ToTensor()]
@@ -98,15 +98,15 @@ def main():
 
             #Read frame
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-			frame = frame.resize((256,128))
+            frame = frame.resize((256,128))
             frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
-			frame = frame.to(device)
-			data['frame'] = frame
+            frame = frame.to(device)
+            data['frame'] = frame
 
             with torch.no_grad():
                 output = model.forward(data)
 
-			predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+            predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
             # display test err
             loss_criterion = torch.nn.MSELoss()
@@ -135,9 +135,9 @@ def main():
         #get the frame index for last window
         
         frame_index = int(round((opt.input_audio_length - opt.audio_length / 2.0) * 10))
-		if frame_index > frame_count: frame_index = frame_count
+        if frame_index > frame_count: frame_index = frame_count
         frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-		frame = frame.resize((256,128))
+        frame = frame.resize((256,128))
 
         #check output directory
         if not os.path.isdir(os.path.join(opt.output_dir_root, audio_name)):
@@ -145,14 +145,14 @@ def main():
         #save sample image
         frame.save(os.path.join(opt.output_dir_root, audio_name, 'sample_image.png'))
         frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
-	
-		frame = frame.to(device)
-		data['frame'] = frame
+    
+        frame = frame.to(device)
+        data['frame'] = frame
 
         with torch.no_grad():
             output = model.forward(data)
 
-		predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
+        predicted_spectrogram = output[0,:,:,:].data[:].cpu().numpy()
 
         #ISTFT to convert back to audio
         reconstructed_stft_diff = predicted_spectrogram[0,:,:] + (1j * predicted_spectrogram[1,:,:])
