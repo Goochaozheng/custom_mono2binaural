@@ -54,8 +54,9 @@ def weights_init(m):
 class VisualNet(nn.Module):
     def __init__(self):
         super(VisualNet, self).__init__()
-        original_net = torchvision.models.vgg16_bn(pretrained=True)
-        self.feature_extraction = list(original_net.children())[0]
+        original_net = torchvision.models.densenet121(pretrained=True)
+        layers = list(original_net.children())[:-1]
+        self.visual_extract = torch.nn.Sequential(*layers)
 
     def forward(self, x):
         x = self.feature_extraction(x)
@@ -77,11 +78,11 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer4 = unet_upconv(ngf * 4 + 256, ngf)
         self.audionet_upconvlayer5 = unet_upconv(ngf * 2 + 256, output_nc, True) #outermost layer use a sigmoid to bound the mask
         
-        self.visual_fusion1 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
-        self.visual_fusion2 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
-        self.visual_fusion3 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
-        self.visual_fusion4 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
-        self.visual_fusion5 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
+        self.visual_fusion1 = create_conv(1024, 8, 1, 0) #reduce dimension of extracted visual features
+        self.visual_fusion2 = create_conv(1024, 8, 1, 0) #reduce dimension of extracted visual features
+        self.visual_fusion3 = create_conv(1024, 8, 1, 0) #reduce dimension of extracted visual features
+        self.visual_fusion4 = create_conv(1024, 8, 1, 0) #reduce dimension of extracted visual features
+        self.visual_fusion5 = create_conv(1024, 8, 1, 0) #reduce dimension of extracted visual features
 
     def forward(self, x, visual_feat):
         audio_conv1feature = self.audionet_convlayer1(x)
