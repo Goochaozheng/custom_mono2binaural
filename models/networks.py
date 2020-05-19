@@ -55,7 +55,7 @@ class VisualNet(nn.Module):
     def __init__(self):
         super(VisualNet, self).__init__()
         original_net = torchvision.models.googlenet(pretrained=True)
-        layers = list(googlenet.children())[:-3]
+        layers = list(original_net.children())[:-3]
         self.feature_extraction = torch.nn.Sequential(*layers)
 
     def forward(self, x):
