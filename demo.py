@@ -94,6 +94,7 @@ def main():
             data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
             #get the frame index for current window
             frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * 10)
+            if frame_index > frame_count: frame_index = frame_count
 
             #Read frame
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
