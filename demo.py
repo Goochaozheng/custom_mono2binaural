@@ -49,14 +49,15 @@ def main():
 
     data_source = h5py.File(opt.data_path)
     audio_source = h5py.File(opt.input_audio_path)
+    
+    total_loss = 0
+    count = 0
 
-    for index in range(len(data_source['audio'])):
+    for index in tqdm(range(len(data_source['audio'])), ascii=True):
 
         path_parts = data_source['audio'][index].decode().strip().split('\\')
         audio_name = path_parts[-1][:-4]
         audio_index = int(audio_name) - 1
-
-        print("Processing audio: %s (%d out of %d)" % (audio_name, index, len(data_source['audio'])))
 
         #load the audio to perform separation
         audio = audio_source['audio'][audio_index]
@@ -64,7 +65,7 @@ def main():
         audio_channel2 = audio[1,:]
 
         #load video 
-        frame_path = "H:\\FAIR-Play\\FAIR-Play\\frames\\" + audio_name
+        frame_path = opt.input_frame_path + audio_name
 		frame_count = len(os.listdir(frame_path))
 
         #define the transformation to perform on visual frames
@@ -80,8 +81,6 @@ def main():
         sliding_window_start = 0
         data = {}
         samples_per_window = int(opt.audio_length * opt.audio_sampling_rate)
-        total_loss = 0
-        count = 0
 
         while sliding_window_start + samples_per_window < audio.shape[-1]:
 
@@ -111,8 +110,6 @@ def main():
             # display test err
             loss_criterion = torch.nn.MSELoss()
             loss = loss_criterion(output, data['audio_diff'][:,:,:-1,:].cuda())
-            total_loss = total_loss + loss
-            count = count + 1
 
             #ISTFT to convert back to audio
             reconstructed_stft_diff = predicted_spectrogram[0,:,:] + (1j * predicted_spectrogram[1,:,:])
@@ -170,14 +167,16 @@ def main():
         #divide aggregated predicted audio by their corresponding counts
         predicted_binaural_audio = np.divide(binaural_audio, overlap_count)
 
-        print('Loss:%f' % (total_loss/count))
-
+        total_loss = total_loss + loss
+        count = count + 1
+        
         mixed_mono = (audio_channel1 + audio_channel2) / 2
 
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'mixed_mono.wav'), mixed_mono, sr=opt.audio_sampling_rate)
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'input_binaural.wav'), audio, sr=opt.audio_sampling_rate)
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'predicted_binaural.wav'), predicted_binaural_audio, sr=opt.audio_sampling_rate)
 
+    print('Loss:%f' % (total_loss/count))
 
 if __name__ == '__main__':
     main()
