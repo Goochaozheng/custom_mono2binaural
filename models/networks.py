@@ -56,7 +56,7 @@ class VisualNet(nn.Module):
         super(VisualNet, self).__init__()
         original_net = torchvision.models.densenet121(pretrained=True)
         layers = list(original_net.children())[:-1]
-        self.visual_extract = torch.nn.Sequential(*layers)
+        self.feature_extraction = torch.nn.Sequential(*layers)
 
     def forward(self, x):
         x = self.feature_extraction(x)
