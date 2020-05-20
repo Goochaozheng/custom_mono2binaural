@@ -60,7 +60,7 @@ class VisualNet(nn.Module):
 
     def forward(self, x):
         x = self.feature_extraction(x)
-        return x['pool']
+        return x['3']
 
 # U-Net
 class AudioNet(nn.Module):
@@ -78,7 +78,7 @@ class AudioNet(nn.Module):
         self.audionet_upconvlayer3 = unet_upconv(ngf * 8, ngf * 2)
         self.audionet_upconvlayer4 = unet_upconv(ngf * 4, ngf)
         self.audionet_upconvlayer5 = unet_upconv(ngf * 2, output_nc, True) #outermost layer use a sigmoid to bound the mask
-        self.conv1x1 = create_conv(256, 64, 1, 0) #reduce dimension of extracted visual features
+        self.conv1x1 = create_conv(256, 8, 1, 0) #reduce dimension of extracted visual features
 
 
     def forward(self, x, visual_feat):
