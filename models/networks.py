@@ -81,7 +81,7 @@ class AudioNet(nn.Module):
         # self.conv1x1 = create_conv(512, 8, 1, 0) #reduce dimension of extracted visual features
 
 
-    def forward(self, x, visual_feat):
+    def forward(self, x):
         audio_conv1feature = self.audionet_convlayer1(x)
         audio_conv2feature = self.audionet_convlayer2(audio_conv1feature)
         audio_conv3feature = self.audionet_convlayer3(audio_conv2feature)
@@ -99,5 +99,5 @@ class AudioNet(nn.Module):
         audio_upconv3feature = self.audionet_upconvlayer3(torch.cat((audio_upconv2feature, audio_conv3feature), dim=1))
         audio_upconv4feature = self.audionet_upconvlayer4(torch.cat((audio_upconv3feature, audio_conv2feature), dim=1))
         mask_prediction = self.audionet_upconvlayer5(torch.cat((audio_upconv4feature, audio_conv1feature), dim=1)) * 2 - 1
-        
+
         return mask_prediction
