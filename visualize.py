@@ -6,12 +6,15 @@ import h5py
 import numpy as np
 import librosa
 import time
+import random
 from tqdm import tqdm
 from PIL import Image
 import matplotlib.pyplot as plt
 
 audio_length = 0.63
 audio_sampling_rate = 16000
+
+model_path = "checkpoints/audio_dense_1_1/400_model.pth"
 
 data_path = "data/split-8/test.h5"
 input_audio_path = "D:/Workspace/FAIR-Play/FAIR-Play/audio_h5/audio.h5"
@@ -35,7 +38,7 @@ def mask_out(frame, col, row):
     frame = np.array(frame)
     x = 4*col
     y = 4*row
-    frame[y:y+4, x:x+4, :] = 0
+    frame[y:y+4, x:x+4, :] = frame.mean()
     return frame
 
 def write_loss(loss_map, col, row, loss):
@@ -44,7 +47,7 @@ def write_loss(loss_map, col, row, loss):
     loss_map[y:y+4, x:x+4] = loss
     return loss_map
 
-model = torch.load("trained_model/audio_dense_1.pth").to("cuda:0")
+model = torch.load(model_path).to("cuda:0")
 model.eval()
 loss_criterion = torch.nn.MSELoss()
 
@@ -77,9 +80,15 @@ for index in tqdm(range(len(data_source['audio'])), ascii=True):
     frame_path = input_frame_path + audio_name
     frame_index = int(round(((audio_start_time + audio_end_time) / 2.0 + 0.05) * 10))
     frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-    input_image = input_image.resize((256,128))
+    input_image = frame.resize((256,128))
 
-    for i in tqdm(range(32*64), ascii=True):
+    origin_input = torchvision.transforms.ToTensor()(input_image)
+    data['frame'] = origin_input.unsqueeze(0).cuda()
+    with torch.no_grad():
+        out = model(data)
+    origin_loss = loss_criterion(out, data['audio_diff'][:,:,:-1,:].cuda())
+
+    for i in range(32*64):
         col = int(i % 64)
         row = int(i / 64)
         mask_image = mask_out(input_image, col, row)
@@ -91,25 +100,18 @@ for index in tqdm(range(len(data_source['audio'])), ascii=True):
             out = model(data)
 
         loss = loss_criterion(out, data['audio_diff'][:,:,:-1,:].cuda())
-        loss_map = write_loss(loss_map, col, row, loss)
-
+        loss_diff = loss - origin_loss
+        if loss_diff < 0: loss_diff=0
+        loss_map = write_loss(loss_map, col, row, loss_diff)
 
     if not os.path.isdir(os.path.join(output_dir_root, audio_name)):
         os.mkdir(os.path.join(output_dir_root, audio_name))
 
     loss_map = loss_map.cpu().numpy()
-    np.savetxt("loss_map.txt", loss_map)
-
-    input_image = torchvision.transforms.ToTensor()(input_image)
-    data['frame'] = input_image.unsqueeze(0).cuda()
-    with torch.no_grad():
-        out = model(data)
-    loss = loss_criterion(out, data['audio_diff'][:,:,:-1,:].cuda())
-
-    print("Loss: %f" % loss)
+    np.savetxt(os.path.join(output_dir_root, audio_name, "loss_map.txt"), loss_map)
 
     loss_map = (loss_map - loss_map.min()) / (loss_map.max() - loss_map.min())
     img = Image.fromarray(np.uint8(loss_map * 255))
-    Image.save(os.path.join(output_dir_root, audio_name, "loss_map.png"), img)
-    Image.save(os.path.join(output_dir_root, audio_name, "input.png"), input_image)
+    img.save(os.path.join(output_dir_root, audio_name, "loss_map.png"))
+    frame.resize((256,128)).save(os.path.join(output_dir_root, audio_name, "input.png"))
 
