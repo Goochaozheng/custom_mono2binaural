@@ -68,11 +68,6 @@ def main():
         frame_path = opt.input_frame_path + audio_name
         frame_count = len(os.listdir(frame_path))
 
-        #define the transformation to perform on visual frames
-        vision_transform_list = [transforms.Resize((128,256)), transforms.ToTensor()]
-        # vision_transform_list.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
-        vision_transform = transforms.Compose(vision_transform_list)
-
         #perform spatialization over the whole audio using a sliding window approach
         overlap_count = np.zeros((audio.shape)) #count the number of times a data point is calculated
         binaural_audio = np.zeros((audio.shape))
@@ -99,7 +94,7 @@ def main():
             #Read frame
             frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
             frame = frame.resize((256,128))
-            frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
+            frame = transforms.ToTensor()(frame).unsqueeze(0) #unsqueeze to add a batch dimension
             frame = frame.to(device)
             data['frame'] = frame
 
@@ -144,7 +139,7 @@ def main():
             os.mkdir(os.path.join(opt.output_dir_root, audio_name))
         #save sample image
         frame.save(os.path.join(opt.output_dir_root, audio_name, 'sample_image.png'))
-        frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
+        frame = transforms.ToTensor()(frame).unsqueeze(0) #unsqueeze to add a batch dimension
     
         frame = frame.to(device)
         data['frame'] = frame
