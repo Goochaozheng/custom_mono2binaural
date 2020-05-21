@@ -59,18 +59,18 @@ class CustomDataset(torch.utils.data.Dataset):
         audio_mix_spec = torch.FloatTensor(generate_spectrogram(audio_channel1 + audio_channel2))
 
         #get the frame dir path based on audio path
-        path_parts[-1] = path_parts[-1][:-4]
-        path_parts[-2] = 'frames'
-        frame_path = '/'.join(path_parts)
+        # path_parts[-1] = path_parts[-1][:-4]
+        # path_parts[-2] = 'frames'
+        # frame_path = '/'.join(path_parts)
 
-        frame_index = int(round(((audio_start_time + audio_end_time) / 2.0 + 0.05) * 10))  #10 frames extracted per second
-        frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-        frame = frame.resize((256,128))
-        frame = transforms.ToTensor()(frame)
+        # frame_index = int(round(((audio_start_time + audio_end_time) / 2.0 + 0.05) * 10))  #10 frames extracted per second
+        # frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
+        # frame = frame.resize((256,128))
+        # frame = transforms.ToTensor()(frame)
 
         data = {
             # 'visual_feature': visual_feature,
-            'frame': frame,
+            # 'frame': frame,
             'audio_mix': audio_mix_spec,
             'audio_diff': audio_diff_spec
         }
