@@ -31,9 +31,9 @@ def generate_spectrogram(audio):
 
 
 def audio_normalize(samples, desired_rms = 0.1, eps = 1e-4):
-  rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
-  samples = samples * (desired_rms / rms)
-  return rms / desired_rms, samples
+    rms = np.maximum(eps, np.sqrt(np.mean(samples**2)))
+    samples = samples * (desired_rms / rms)
+    return rms / desired_rms, samples
 
 
 def main():
@@ -64,15 +64,6 @@ def main():
         audio_channel1 = audio[0,:]
         audio_channel2 = audio[1,:]
 
-        #load video 
-        frame_path = opt.input_frame_path + audio_name
-        frame_count = len(os.listdir(frame_path))
-
-        #define the transformation to perform on visual frames
-        vision_transform_list = [transforms.Resize((128,256)), transforms.ToTensor()]
-        # vision_transform_list.append(transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
-        vision_transform = transforms.Compose(vision_transform_list)
-
         #perform spatialization over the whole audio using a sliding window approach
         overlap_count = np.zeros((audio.shape)) #count the number of times a data point is calculated
         binaural_audio = np.zeros((audio.shape))
@@ -93,15 +84,6 @@ def main():
             data['audio_diff'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 - audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
             data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
             #get the frame index for current window
-            frame_index = int((((sliding_window_start + samples_per_window / 2.0) / audio.shape[-1]) * opt.input_audio_length) * 10)
-            if frame_index > frame_count: frame_index = frame_count
-
-            #Read frame
-            frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-            frame = frame.resize((256,128))
-            frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
-            frame = frame.to(device)
-            data['frame'] = frame
 
             with torch.no_grad():
                 output = model.forward(data)
@@ -134,21 +116,6 @@ def main():
         data['audio_mix'] = torch.FloatTensor(generate_spectrogram(audio_segment_channel1 + audio_segment_channel2)).unsqueeze(0) #unsqueeze to add a batch dimension
         #get the frame index for last window
         
-        frame_index = int(round((opt.input_audio_length - opt.audio_length / 2.0) * 10))
-        if frame_index > frame_count: frame_index = frame_count
-        frame = Image.open(os.path.join(frame_path, str(frame_index).zfill(6) + '.png'))
-        frame = frame.resize((256,128))
-
-        #check output directory
-        if not os.path.isdir(os.path.join(opt.output_dir_root, audio_name)):
-            os.mkdir(os.path.join(opt.output_dir_root, audio_name))
-        #save sample image
-        frame.save(os.path.join(opt.output_dir_root, audio_name, 'sample_image.png'))
-        frame = vision_transform(frame).unsqueeze(0) #unsqueeze to add a batch dimension
-    
-        frame = frame.to(device)
-        data['frame'] = frame
-
         with torch.no_grad():
             output = model.forward(data)
 
@@ -172,6 +139,10 @@ def main():
         count = count + 1
         
         mixed_mono = (audio_channel1 + audio_channel2) / 2
+
+        #check output directory
+        if not os.path.isdir(os.path.join(opt.output_dir_root, audio_name)):
+            os.mkdir(os.path.join(opt.output_dir_root, audio_name))
 
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'mixed_mono.wav'), mixed_mono, sr=opt.audio_sampling_rate)
         librosa.output.write_wav(os.path.join(opt.output_dir_root, audio_name, 'input_binaural.wav'), audio, sr=opt.audio_sampling_rate)
