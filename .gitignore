@@ -8,6 +8,4 @@ sample/mnist_train
 demo/
 sample/
 trained_model/
-model_detail.ipynb
 loss_map.txt
-visualization.ipynb
